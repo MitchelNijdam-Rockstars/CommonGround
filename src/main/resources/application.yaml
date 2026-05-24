@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: common-ground
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    schemas: common_ground
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: common_ground
