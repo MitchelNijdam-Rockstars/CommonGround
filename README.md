@@ -19,7 +19,7 @@ First:
 ./gradlew clean build
 ```
 
-Access website on: http://localhost:8011
+Access website on: http://localhost:8012
 
 ### Option 2: running frontend & backend separately (live-reload enabled)
 
@@ -34,10 +34,6 @@ cd frontend && npm start
 ```
 
 Access website on: http://localhost:4200
-
-## Push notifications
-
-Uses the Web Push / VAPID protocol. Users subscribe per device via Settings; subscriptions are stored in the database tied to their account. Domain events (e.g. a new coffee cup added, a countdown deadline approaching in 3 days) are published via Spring Application Events and picked up by `NotificationEventListener`, which calls the backend push service. Configure VAPID keys in `application.yaml` under `app.vapid`.
 
 ## Detailed docs
 
