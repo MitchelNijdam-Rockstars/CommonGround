@@ -13,8 +13,8 @@ Common Ground is a quiz-style ranking game for democratizing coding standards. T
 - **Build**: Gradle with `com.github.node-gradle.node` plugin (auto-downloads Node 24.15.0)
 - **Database**: PostgreSQL 16 (Docker), schema `common_ground`, managed by Flyway
 
-## Domain context
-See [docs/CONTEXT.md] for the domain-specific definitions.
+## Domain language
+See [docs/CONTEXT.md](docs/CONTEXT.md) for the domain-specific definitions.
 
 ## Running Locally
 

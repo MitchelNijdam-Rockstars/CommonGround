@@ -1,0 +1,72 @@
+# Common Ground
+
+A voting platform that democratizes coding standards. Developers vote on competing coding style options; the results are ranked by algorithm and can be exported as a Markdown file for AI coding agents.
+
+## Language
+
+### Core voting concepts
+
+**Topic**:
+A subject area representing a coding standard decision to be made (e.g., "Null handling in Kotlin"). A Topic groups N Patterns and carries a question, optional baseline context, and Labels.
+_Avoid_: Dilemma, Question, Subject
+
+**Pattern**:
+A single competing coding style option that belongs to a Topic. Patterns are what get ranked; the winning Pattern of a Topic is the highest-ranked one.
+_Avoid_: Option, Approach, Variant, Style, Alternative
+
+**Label**:
+A tag attached to a Topic from a managed vocabulary, used to filter and browse Topics. Each Label has a LabelType.
+_Avoid_: Tag, Category
+
+**LabelType**:
+The classification of a Label. Fixed enum: `LANGUAGE`, `FRAMEWORK`, `ARCHITECTURE`, `PARADIGM`, `STYLE`.
+_Avoid_: LabelKind, LabelCategory
+
+### Voting actions
+
+**Vote**:
+A record of a User choosing one Pattern over another in a head-to-head comparison. Captures the winning Pattern, the losing Pattern, and the voter. The unit on which ELO and win rate are computed.
+_Avoid_: Choice, Selection, Pick
+
+**Skip**:
+A record of a User declining to choose between two shown Patterns. Captures both Patterns shown, the voter, and a mandatory SkipReason.
+_Avoid_: Pass, Abstain
+
+**SkipReason**:
+The reason a User skipped a head-to-head. Fixed enum: `NO_PREFERENCE` (seen both, genuinely no preference), `NOT_FAMILIAR` (insufficient domain knowledge to judge).
+_Avoid_: SkipType, SkipCause
+
+### Dataset management
+
+**PatternSuggestion**:
+A candidate Pattern submitted by a User for an existing Topic. Moves through states: `PENDING` → `APPROVED` or `REJECTED`. Approval creates a real Pattern in the voting pool with zero votes; it does not promote the suggestion itself.
+_Avoid_: Suggestion (alone — too ambiguous), OptionSuggestion
+
+**TopicSuggestion**:
+A candidate Topic submitted by a User when a whole subject area is missing from the dataset. Moves through the same states as PatternSuggestion. Approval creates a new Topic.
+_Avoid_: Suggestion (alone — too ambiguous)
+
+### Users
+
+**User**:
+A person authenticated via Cloudflare One-Time PIN who interacts with the system. Has a role attribute: `USER` (can vote, view rankings, submit suggestions) or `ADMIN` (all User privileges plus approving/rejecting suggestions, managing Topics, Labels, and Patterns).
+_Avoid_: Voter, Developer, Participant
+
+## Example dialogue
+
+> **Dev**: "I want to add a new option for how we handle exceptions — can I just add a Pattern directly?"
+>
+> **Domain expert**: "No — you'd submit a PatternSuggestion for the Exception Handling Topic. An Admin reviews it and approves it, at which point the Pattern enters the voting pool."
+>
+> **Dev**: "What if there's no Topic for it yet?"
+>
+> **Domain expert**: "Then you submit a TopicSuggestion. Once approved, an Admin creates the Topic and you can suggest Patterns for it."
+>
+> **Dev**: "And when I vote, what exactly am I doing?"
+>
+> **Domain expert**: "You're shown two Patterns from the same Topic. You either cast a Vote — picking one over the other — or you Skip with a reason. Every Vote updates the ELO score and win rate of both Patterns involved."
+
+## Flagged ambiguities
+
+- **"Suggestion"** used alone is ambiguous — always qualify as PatternSuggestion or TopicSuggestion.
+- **"Option"** must not be used as a domain term; it collides with general UI vocabulary and was considered and rejected in favour of Pattern.
