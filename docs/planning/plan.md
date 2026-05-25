@@ -180,3 +180,38 @@ The platform is designed to run as independent instances — one for a company's
 - The batch import format (for seeding from AI codebase analysis) should likewise be defined as a JSON schema before the import feature is built.
 - Vote comments are optional. The UI should make it easy to skip leaving a comment without friction — the goal is maximising votes cast, not maximising comments.
 - The "Your streak" feature requires tracking the last vote date per User. A streak resets if a User goes a full calendar day without casting any Vote.
+
+---
+
+## Issues
+
+Each issue is a thin vertical slice through all layers (schema, API, UI, tests). Issues live in `docs/issues/`.
+
+| # | Title | Blocked by |
+|---|---|---|
+| [01](../issues/01-foundation-dark-theme.md) | Project Foundation & Dark Theme | None |
+| [02](../issues/02-auth-cloudflare-user-roles.md) | Authentication: Cloudflare Access JWT + User Roles | 01 |
+| [03](../issues/03-labels-topic-browsing.md) | Labels & Topic Browsing | 02 |
+| [04](../issues/04-pattern-management.md) | Pattern Management | 03 |
+| [05](../issues/05-voting-arena-core.md) | Voting Arena: Core (Vote, Skip, ELO, Matchup) | 04 |
+| [06](../issues/06-expertise-filter.md) | Expertise Filter | 03, 05 |
+| [07](../issues/07-vote-comments-streak.md) | Vote Comments & Voting Streak | 05 |
+| [08](../issues/08-pattern-suggestion-workflow.md) | PatternSuggestion Workflow | 04 |
+| [09](../issues/09-topic-suggestion-workflow.md) | TopicSuggestion Workflow | 03 |
+| [10](../issues/10-rankings-leaderboard.md) | Rankings Leaderboard | 05 |
+| [11](../issues/11-pattern-detail-comments.md) | Pattern Detail & Anonymised Comments | 07, 10 |
+| [12](../issues/12-markdown-export.md) | Markdown Export | 10 |
+| [13](../issues/13-batch-import.md) | Batch Import | 04 |
+
+### Dependency chain
+
+```
+01 → 02 → 03 → 04 → 05 → 06
+                    ↓
+                    07 → 11 ← 10 → 12
+                    08        ↑
+               03 → 09       05
+               04 → 13
+```
+
+Issue 05 (Voting Arena core) is the critical path — it blocks 06, 07, 10, and transitively 11 and 12. Issues 08, 09, and 13 can be picked up in parallel once their respective blockers are done.
