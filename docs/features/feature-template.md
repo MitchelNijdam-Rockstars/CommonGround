@@ -1,6 +1,6 @@
 # Feature name
 
-Here comes a short description of the feature from a user perspective. Normal understandable language.
+Here comes a short description of the feature from a user perspective. Normal understandable language, short and concise.
 
 ## Requirements
 
