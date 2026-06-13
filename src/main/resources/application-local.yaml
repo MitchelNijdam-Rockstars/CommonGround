@@ -13,4 +13,12 @@ spring:
 server:
   port: 8012
 
+commonground:
+  auth:
+    admin-emails:
+      - dev@local.test
+    dev-bypass:
+      enabled: true
+      email: dev@local.test
+
 

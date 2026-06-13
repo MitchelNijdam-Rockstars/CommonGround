@@ -10,8 +10,23 @@ spring:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
         default_schema: common_ground
+
+commonground:
+  auth:
+    # Emails in this list are assigned the ADMIN role on login
+    admin-emails: []
+    cloudflare:
+      # Cloudflare Access team domain (the <team> part of <team>.cloudflareaccess.com).
+      # Leave empty to disable JWT verification (all requests are then rejected unless dev-bypass is on).
+      team-domain: ""
+      # Expected audience (aud) tag of the Cloudflare Access application; empty skips the audience check
+      audience: ""
+    dev-bypass:
+      enabled: false
+      email: dev@local.test
