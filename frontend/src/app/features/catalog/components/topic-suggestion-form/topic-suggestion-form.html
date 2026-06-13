@@ -1,0 +1,66 @@
+<form
+  (ngSubmit)="submit()"
+  class="mb-6 space-y-3 rounded-2xl border border-edge bg-surface p-5"
+>
+  <h3 class="font-semibold">Suggest a new topic</h3>
+
+  <input
+    type="text"
+    name="question"
+    [(ngModel)]="question"
+    maxlength="500"
+    required
+    placeholder="The question, e.g. “How should errors be modelled in Kotlin?”"
+    class="w-full rounded-lg border border-edge bg-background/50 px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+  />
+
+  <textarea
+    name="context"
+    [(ngModel)]="context"
+    rows="2"
+    placeholder="Baseline context shown to voters (optional)"
+    class="w-full resize-y rounded-lg border border-edge bg-background/50 px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+  ></textarea>
+
+  @if (labels().length > 0) {
+    <div>
+      <p class="mb-1.5 text-xs text-ink-muted">Labels</p>
+      <div class="flex flex-wrap gap-1.5">
+        @for (label of labels(); track label.id) {
+          <button
+            type="button"
+            (click)="toggleLabel(label.id)"
+            class="rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors"
+            [class.border-primary]="selectedLabelIds().has(label.id)"
+            [class.text-primary]="selectedLabelIds().has(label.id)"
+            [class.border-edge]="!selectedLabelIds().has(label.id)"
+            [class.text-ink-muted]="!selectedLabelIds().has(label.id)"
+          >
+            {{ label.name }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (error()) {
+    <p class="text-sm text-accent-pink">{{ error() }}</p>
+  }
+
+  <div class="flex gap-2">
+    <button
+      type="submit"
+      [disabled]="saving() || !question.trim()"
+      class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50"
+    >
+      {{ saving() ? 'Submitting…' : 'Submit topic suggestion' }}
+    </button>
+    <button
+      type="button"
+      (click)="cancelled.emit()"
+      class="rounded-lg border border-edge px-4 py-2 text-sm text-ink-muted hover:text-ink"
+    >
+      Cancel
+    </button>
+  </div>
+</form>

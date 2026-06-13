@@ -1,0 +1,22 @@
+<section class="flex min-h-[60dvh] items-center justify-center">
+  <div class="w-full max-w-md rounded-2xl border border-edge bg-surface p-8 text-center">
+    <div
+      class="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/20"
+    >
+      <lucide-icon name="shield-check" class="size-7 text-primary" />
+    </div>
+    <h1 class="text-xl font-bold">Authentication required</h1>
+    <p class="mt-2 text-sm text-ink-muted">
+      Common Ground is protected by Cloudflare Access. Sign in with a one-time PIN sent to your
+      email address, then try again.
+    </p>
+    <button
+      type="button"
+      (click)="retry()"
+      [disabled]="checking"
+      class="mt-6 w-full rounded-lg bg-primary px-4 py-2.5 font-semibold text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+    >
+      {{ checking ? 'Checking…' : 'Check again' }}
+    </button>
+  </div>
+</section>

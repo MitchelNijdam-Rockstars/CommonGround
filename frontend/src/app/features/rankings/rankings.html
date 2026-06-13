@@ -1,0 +1,139 @@
+<section class="mx-auto max-w-5xl">
+  <header class="mb-6 text-center">
+    <h1 class="text-2xl font-bold sm:text-3xl">Rankings &amp; Insights</h1>
+    <p class="mt-2 text-sm text-ink-muted">
+      The current community consensus for every topic, ranked by your chosen algorithm.
+    </p>
+  </header>
+
+  <div class="mb-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+    <div
+      class="inline-flex rounded-xl border border-edge bg-surface p-1"
+      role="tablist"
+      data-testid="algorithm-toggle"
+    >
+      <button
+        type="button"
+        role="tab"
+        data-testid="algorithm-elo"
+        [attr.aria-selected]="algorithm() === 'ELO'"
+        (click)="selectAlgorithm('ELO')"
+        class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors"
+        [class.bg-primary]="algorithm() === 'ELO'"
+        [class.text-white]="algorithm() === 'ELO'"
+        [class.text-ink-muted]="algorithm() !== 'ELO'"
+      >
+        <lucide-icon name="trending-up" class="size-4" />
+        ELO
+      </button>
+      <button
+        type="button"
+        role="tab"
+        data-testid="algorithm-win-rate"
+        [attr.aria-selected]="algorithm() === 'WIN_RATE'"
+        (click)="selectAlgorithm('WIN_RATE')"
+        class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors"
+        [class.bg-primary]="algorithm() === 'WIN_RATE'"
+        [class.text-white]="algorithm() === 'WIN_RATE'"
+        [class.text-ink-muted]="algorithm() !== 'WIN_RATE'"
+      >
+        <lucide-icon name="swords" class="size-4" />
+        Win rate
+      </button>
+    </div>
+
+    <button
+      type="button"
+      data-testid="export-button"
+      (click)="exportMarkdown()"
+      [disabled]="exporting()"
+      class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+    >
+      <lucide-icon name="download" class="size-4" />
+      {{ exporting() ? 'Exporting…' : 'Export' }}
+    </button>
+  </div>
+
+  @if (loading()) {
+    <p class="py-16 text-center text-ink-muted">Loading rankings…</p>
+  } @else if (rankings().length === 0) {
+    <div class="mx-auto max-w-md rounded-2xl border border-edge bg-surface p-10 text-center">
+      <div class="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-surface">
+        <lucide-icon name="inbox" class="size-7 text-ink-muted" />
+      </div>
+      <h2 class="text-lg font-bold">No rankings yet</h2>
+      <p class="mt-2 text-sm text-ink-muted">
+        There are no topics with active patterns to rank right now.
+      </p>
+    </div>
+  } @else {
+    <div class="space-y-8">
+      @for (section of rankings(); track section.topic.id) {
+        <article class="rounded-2xl border border-edge bg-surface p-5">
+          <header class="mb-4">
+            <h2 class="text-lg font-bold sm:text-xl">{{ section.topic.question }}</h2>
+            @if (section.topic.context) {
+              <p class="mt-1 text-sm text-ink-muted">{{ section.topic.context }}</p>
+            }
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              @for (label of section.topic.labels; track label.id) {
+                <app-label-badge [label]="label" />
+              }
+              <span class="flex items-center gap-1.5 text-xs text-ink-muted">
+                <lucide-icon name="user" class="size-3.5" />
+                {{ section.totalVotes }} votes
+              </span>
+            </div>
+          </header>
+
+          <ol class="space-y-3">
+            @for (pattern of section.patterns; track pattern.id; let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="w-full rounded-xl border border-edge bg-surface p-4 text-left transition-colors hover:border-primary/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  data-testid="pattern-entry"
+                  (click)="openPattern(pattern.id, i + 1)"
+                >
+                  <div class="mb-2 flex items-center gap-3">
+                    <span
+                      class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary-soft"
+                      data-testid="rank"
+                    >
+                      {{ i + 1 }}
+                    </span>
+                    <h3 class="min-w-0 flex-1 truncate text-sm font-semibold">
+                      {{ pattern.title }}
+                    </h3>
+                    @if (algorithm() === 'ELO') {
+                      <span class="shrink-0 text-xs font-medium text-ink-muted">
+                        {{ pattern.eloRating | number: '1.0-0' }} ELO
+                      </span>
+                    } @else {
+                      <span class="shrink-0 text-xs font-medium text-ink-muted">
+                        @if (pattern.winRate !== null) {
+                          {{ pattern.winRate | percent: '1.0-0' }} win rate
+                        } @else {
+                          no votes
+                        }
+                      </span>
+                    }
+                  </div>
+                  <app-code-block [code]="pattern.code" [language]="pattern.language" />
+                </button>
+              </li>
+            }
+          </ol>
+        </article>
+      }
+    </div>
+  }
+
+  @if (selected(); as sel) {
+    <app-pattern-detail
+      [patternId]="sel.id"
+      [rank]="sel.rank"
+      (close)="closePattern()"
+    />
+  }
+</section>

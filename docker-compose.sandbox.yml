@@ -1,0 +1,26 @@
+services:
+  claude-sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile.sandbox
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - gradle-cache:/root/.gradle
+      - npm-cache:/root/.npm
+      - claude-config:/root/.claude  # persists login session across container runs
+    environment:
+      # Reach the db service by container name instead of localhost
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/common_ground?currentSchema=common_ground
+      - SPRING_PROFILES_ACTIVE=local
+    stdin_open: true
+    tty: true
+    command: ["claude", "--dangerously-skip-permissions"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  gradle-cache:
+  npm-cache:
+  claude-config:

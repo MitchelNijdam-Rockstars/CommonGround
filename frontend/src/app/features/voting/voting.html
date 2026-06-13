@@ -1,0 +1,123 @@
+<section>
+  @if (loading()) {
+    <p class="py-16 text-center text-ink-muted">Loading matchups…</p>
+  } @else if (allCaughtUp() || !current()) {
+    <div class="mx-auto max-w-md rounded-2xl border border-edge bg-surface p-10 text-center">
+      <div
+        class="mx-auto mb-4 flex size-14 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/20"
+      >
+        <lucide-icon name="check" class="size-7 text-primary" />
+      </div>
+      <h1 class="text-xl font-bold">All caught up!</h1>
+      <p class="mt-2 text-sm text-ink-muted">
+        There are no matchups for you right now. Check back later, or browse the catalog to suggest
+        new patterns.
+      </p>
+    </div>
+  } @else {
+    @if (current(); as matchup) {
+      <div class="mx-auto max-w-5xl">
+        <div class="mb-4 flex items-center justify-between text-sm text-ink-muted">
+          <span
+            class="rounded-full border border-edge bg-surface px-3 py-1 font-medium"
+            data-testid="progress"
+          >
+            {{ progress() }}
+          </span>
+          <span class="flex items-center gap-4">
+            @if (streak() > 1) {
+              <span
+                class="flex items-center gap-1 font-semibold text-streak"
+                data-testid="streak"
+              >
+                <lucide-icon name="flame" class="size-4" />
+                {{ streak() }} day streak
+              </span>
+            }
+            <span class="flex items-center gap-1.5">
+              <lucide-icon name="user" class="size-4" />
+              {{ matchup.topicVoteCount }} votes on this topic
+            </span>
+          </span>
+        </div>
+
+        <header class="mb-6 text-center">
+          <h1 class="text-xl font-bold sm:text-2xl">{{ matchup.topic.question }}</h1>
+          @if (matchup.topic.context) {
+            <p class="mx-auto mt-2 max-w-2xl text-sm text-ink-muted">{{ matchup.topic.context }}</p>
+          }
+          @if (matchup.topic.labels.length > 0) {
+            <div class="mt-3 flex flex-wrap justify-center gap-1.5">
+              @for (label of matchup.topic.labels; track label.id) {
+                <app-label-badge [label]="label" />
+              }
+            </div>
+          }
+        </header>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <button
+            type="button"
+            data-testid="pattern-a"
+            (click)="vote(matchup.patternA.id, matchup.patternB.id)"
+            [disabled]="submitting()"
+            class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
+          >
+            <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
+              {{ matchup.patternA.title }}
+            </h2>
+            <app-code-block [code]="matchup.patternA.code" [language]="matchup.patternA.language" />
+          </button>
+
+          <button
+            type="button"
+            data-testid="pattern-b"
+            (click)="vote(matchup.patternB.id, matchup.patternA.id)"
+            [disabled]="submitting()"
+            class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
+          >
+            <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
+              {{ matchup.patternB.title }}
+            </h2>
+            <app-code-block [code]="matchup.patternB.code" [language]="matchup.patternB.language" />
+          </button>
+        </div>
+
+        <div class="mx-auto mt-5 max-w-2xl">
+          <textarea
+            [(ngModel)]="comment"
+            name="comment"
+            rows="2"
+            maxlength="500"
+            data-testid="comment"
+            placeholder="Why? (optional — shared anonymously on the rankings page)"
+            class="w-full resize-none rounded-xl border border-edge bg-surface px-4 py-2.5 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+          ></textarea>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+          <button
+            type="button"
+            data-testid="skip-no-preference"
+            (click)="skip('NO_PREFERENCE')"
+            [disabled]="submitting()"
+            class="flex items-center gap-2 rounded-lg border border-edge bg-surface px-4 py-2 text-sm text-ink-muted transition-colors hover:text-ink disabled:opacity-60"
+          >
+            <lucide-icon name="circle-slash" class="size-4" />
+            No preference
+          </button>
+          <button
+            type="button"
+            data-testid="skip-not-familiar"
+            (click)="skip('NOT_FAMILIAR')"
+            [disabled]="submitting()"
+            class="flex items-center gap-2 rounded-lg border border-edge bg-surface px-4 py-2 text-sm text-ink-muted transition-colors hover:text-ink disabled:opacity-60"
+          >
+            <lucide-icon name="circle-question-mark" class="size-4" />
+            Not familiar enough
+          </button>
+        </div>
+      </div>
+    }
+  }
+</section>

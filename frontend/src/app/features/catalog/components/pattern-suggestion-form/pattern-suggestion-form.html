@@ -1,0 +1,59 @@
+<form (ngSubmit)="submit()" class="mt-4 space-y-3 rounded-xl border border-edge bg-background/50 p-4">
+  <h4 class="text-sm font-semibold">Suggest an alternative pattern</h4>
+
+  <input
+    type="text"
+    name="title"
+    [(ngModel)]="title"
+    maxlength="200"
+    placeholder="Title (optional)"
+    class="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+  />
+
+  <textarea
+    name="code"
+    [(ngModel)]="code"
+    rows="6"
+    required
+    placeholder="Your code…"
+    class="w-full resize-y rounded-lg border border-edge bg-surface px-3 py-2 font-mono text-[13px] outline-none placeholder:font-sans placeholder:text-ink-muted focus:border-primary/60"
+  ></textarea>
+
+  @if (code.trim()) {
+    <div>
+      <p class="mb-1 text-xs text-ink-muted">Preview</p>
+      <app-code-block [code]="code" [language]="language" />
+    </div>
+  }
+
+  <input
+    type="text"
+    name="language"
+    [(ngModel)]="language"
+    maxlength="50"
+    required
+    placeholder="Language (e.g. kotlin, typescript)"
+    class="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+  />
+
+  @if (error()) {
+    <p class="text-sm text-accent-pink">{{ error() }}</p>
+  }
+
+  <div class="flex gap-2">
+    <button
+      type="submit"
+      [disabled]="saving() || !code.trim() || !language.trim()"
+      class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50"
+    >
+      {{ saving() ? 'Submitting…' : 'Submit suggestion' }}
+    </button>
+    <button
+      type="button"
+      (click)="cancelled.emit()"
+      class="rounded-lg border border-edge px-4 py-2 text-sm text-ink-muted hover:text-ink"
+    >
+      Cancel
+    </button>
+  </div>
+</form>

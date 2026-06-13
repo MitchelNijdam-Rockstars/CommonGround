@@ -1,0 +1,142 @@
+<header class="sticky top-0 z-40 border-b border-edge bg-surface/80 backdrop-blur">
+  <div class="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
+    <a routerLink="/" class="flex shrink-0 items-center gap-2">
+      <span
+        class="bg-gradient-to-r from-primary to-accent bg-clip-text text-lg font-bold text-transparent"
+      >
+        Common Ground
+      </span>
+    </a>
+
+    <nav class="flex flex-1 items-center gap-1 overflow-x-auto">
+      @for (tab of tabs; track tab.path) {
+        <a
+          [routerLink]="tab.path"
+          routerLinkActive="bg-surface-light text-primary"
+          [routerLinkActiveOptions]="{ exact: tab.exact }"
+          class="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-light hover:text-ink"
+        >
+          <lucide-icon [name]="tab.icon" class="size-4" />
+          <span class="hidden sm:inline">{{ tab.label }}</span>
+        </a>
+      }
+      @if (auth.isAdmin()) {
+        <a
+          routerLink="/admin/review"
+          routerLinkActive="bg-surface-light text-accent"
+          class="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-light hover:text-ink"
+        >
+          <lucide-icon name="inbox" class="size-4" />
+          <span class="hidden sm:inline">Review</span>
+        </a>
+      }
+    </nav>
+
+    @if (auth.user(); as user) {
+      <div class="relative shrink-0">
+        <button
+          type="button"
+          (click)="menuOpen.set(!menuOpen())"
+          class="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-background"
+          [attr.aria-label]="'Account menu for ' + user.displayName"
+        >
+          {{ auth.initials() }}
+        </button>
+
+        @if (menuOpen()) {
+          <div
+            class="absolute right-0 mt-2 w-56 rounded-xl border border-edge bg-surface p-2 shadow-xl"
+          >
+            <div class="border-b border-edge px-3 pb-2">
+              <p class="truncate text-sm font-semibold">{{ user.displayName }}</p>
+              <p class="truncate text-xs text-ink-muted">{{ user.email }}</p>
+              @if (user.role === 'ADMIN') {
+                <span
+                  class="mt-1 inline-block rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent"
+                >
+                  Admin
+                </span>
+              }
+            </div>
+            <button
+              type="button"
+              (click)="logout()"
+              class="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-ink-muted hover:bg-surface-light hover:text-ink"
+            >
+              <lucide-icon name="log-out" class="size-4" />
+              Sign out
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (auth.user()) {
+    <div
+      class="mx-auto flex max-w-6xl flex-wrap items-center gap-2 border-t border-edge/60 px-4 py-2 sm:px-6"
+    >
+      <span class="text-xs font-medium uppercase tracking-wide text-ink-muted">Expertise:</span>
+
+      @for (label of expertise.selection(); track label.id) {
+        <span
+          class="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/15 px-2.5 py-0.5 text-xs font-medium text-primary-soft"
+        >
+          {{ label.name }}
+          <button
+            type="button"
+            (click)="expertise.remove(label.id)"
+            class="text-primary-soft/70 hover:text-primary-soft"
+            [attr.aria-label]="'Remove ' + label.name"
+          >
+            <lucide-icon name="x" class="size-3" />
+          </button>
+        </span>
+      } @empty {
+        <span class="text-xs text-ink-muted">none — seeing all topics</span>
+      }
+
+      <div class="relative">
+        <button
+          type="button"
+          (click)="toggleExpertisePanel()"
+          class="inline-flex items-center gap-1 rounded-full border border-dashed border-edge px-2.5 py-0.5 text-xs font-medium text-ink-muted hover:border-primary/50 hover:text-ink"
+        >
+          <lucide-icon name="plus" class="size-3" />
+          Add expertise
+        </button>
+
+        @if (expertisePanelOpen()) {
+          <div
+            class="absolute left-0 z-50 mt-2 w-56 rounded-xl border border-edge bg-surface p-2 shadow-xl"
+          >
+            <p class="px-2 pb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+              Languages
+            </p>
+            @for (label of languageLabels(); track label.id) {
+              <button
+                type="button"
+                (click)="expertise.toggle(label.id)"
+                class="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-surface-light"
+              >
+                {{ label.name }}
+                @if (isSelected(label.id)) {
+                  <lucide-icon name="check" class="size-4 text-primary" />
+                }
+              </button>
+            } @empty {
+              <p class="px-2 py-1.5 text-sm text-ink-muted">No language labels yet.</p>
+            }
+          </div>
+        }
+      </div>
+
+      @if (expertise.openTopicCount() !== null) {
+        <span class="ml-auto text-xs text-ink-muted">
+          <span class="font-semibold text-primary-soft">{{ expertise.openTopicCount() }}</span>
+          topics open for you
+        </span>
+      }
+    </div>
+  }
+</header>

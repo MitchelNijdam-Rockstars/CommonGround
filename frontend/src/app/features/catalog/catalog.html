@@ -1,0 +1,138 @@
+<section>
+  <header class="mb-6 flex flex-wrap items-start justify-between gap-3">
+    <div>
+      <h1 class="text-2xl font-bold">Dataset Catalog</h1>
+      <p class="mt-1 text-sm text-ink-muted">
+        Browse every Topic and its competing Patterns in the voting pool.
+      </p>
+    </div>
+    <button
+      type="button"
+      (click)="topicFormOpen.set(!topicFormOpen())"
+      class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
+    >
+      <lucide-icon name="lightbulb" class="size-4" />
+      Suggest a new topic
+    </button>
+  </header>
+
+  @if (topicFormOpen()) {
+    <app-topic-suggestion-form
+      (submitted)="onTopicSuggestionSubmitted()"
+      (cancelled)="topicFormOpen.set(false)"
+    />
+  }
+
+  <div class="relative mb-4">
+    <lucide-icon
+      name="search"
+      class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted"
+    />
+    <input
+      type="search"
+      placeholder="Search topics…"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)"
+      class="w-full rounded-xl border border-edge bg-surface py-2.5 pl-10 pr-4 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+    />
+  </div>
+
+  @if (labels().length > 0) {
+    <div class="mb-6 flex flex-wrap gap-2">
+      @for (label of labels(); track label.id) {
+        <button
+          type="button"
+          (click)="toggleLabel(label.id)"
+          class="rounded-full border px-3 py-1 text-xs font-medium transition-colors"
+          [class.border-primary]="selectedLabelId() === label.id"
+          [class.bg-primary/15]="selectedLabelId() === label.id"
+          [class.text-primary]="selectedLabelId() === label.id"
+          [class.border-edge]="selectedLabelId() !== label.id"
+          [class.text-ink-muted]="selectedLabelId() !== label.id"
+        >
+          {{ label.name }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (loading()) {
+    <p class="py-10 text-center text-ink-muted">Loading topics…</p>
+  } @else if (topics().length === 0) {
+    <div class="rounded-2xl border border-edge bg-surface p-10 text-center">
+      <p class="font-medium">No topics found</p>
+      <p class="mt-1 text-sm text-ink-muted">Try a different search or remove the label filter.</p>
+    </div>
+  } @else {
+    <ul class="space-y-3">
+      @for (topic of topics(); track topic.id) {
+        <li class="rounded-2xl border border-edge bg-surface">
+          <button
+            type="button"
+            (click)="toggleTopic(topic.id)"
+            class="flex w-full items-start justify-between gap-3 p-5 text-left"
+          >
+            <div>
+              <h2 class="font-semibold">{{ topic.question }}</h2>
+              @if (topic.context) {
+                <p class="mt-1 text-sm text-ink-muted">{{ topic.context }}</p>
+              }
+              @if (topic.labels.length > 0) {
+                <div class="mt-3 flex flex-wrap gap-1.5">
+                  @for (label of topic.labels; track label.id) {
+                    <app-label-badge [label]="label" />
+                  }
+                </div>
+              }
+            </div>
+            <lucide-icon
+              [name]="expandedTopicId() === topic.id ? 'chevron-up' : 'chevron-down'"
+              class="mt-1 size-5 shrink-0 text-ink-muted"
+            />
+          </button>
+
+          @if (expandedTopicId() === topic.id) {
+            <div class="border-t border-edge p-5">
+              @if (patternsLoading()) {
+                <p class="text-sm text-ink-muted">Loading patterns…</p>
+              } @else if (patternsFor(topic.id).length === 0) {
+                <p class="text-sm text-ink-muted">No patterns yet for this topic.</p>
+              } @else {
+                <div class="grid gap-4 md:grid-cols-2">
+                  @for (pattern of patternsFor(topic.id); track pattern.id) {
+                    <div class="min-w-0">
+                      <h3 class="mb-2 text-sm font-semibold text-primary-soft">
+                        {{ pattern.title }}
+                      </h3>
+                      <app-code-block [code]="pattern.code" [language]="pattern.language" />
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (patternFormTopicId() === topic.id) {
+                <app-pattern-suggestion-form
+                  [topicId]="topic.id"
+                  [defaultLanguage]="defaultLanguageFor(topic)"
+                  (submitted)="onPatternSuggestionSubmitted()"
+                  (cancelled)="patternFormTopicId.set(null)"
+                />
+              } @else {
+                <button
+                  type="button"
+                  (click)="patternFormTopicId.set(topic.id)"
+                  class="mt-4 flex items-center gap-2 rounded-lg border border-dashed border-edge px-4 py-2 text-sm text-ink-muted hover:border-primary/50 hover:text-ink"
+                >
+                  <lucide-icon name="plus" class="size-4" />
+                  Add an alternative
+                </button>
+              }
+            </div>
+          }
+        </li>
+      }
+    </ul>
+  }
+
+  <app-my-suggestions />
+</section>

@@ -1,0 +1,101 @@
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4"
+  data-testid="pattern-detail-backdrop"
+  (click)="dismiss()"
+>
+  <div
+    class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-edge bg-surface shadow-xl sm:rounded-2xl"
+    role="dialog"
+    aria-modal="true"
+    data-testid="pattern-detail"
+    (click)="$event.stopPropagation()"
+  >
+    @if (loading()) {
+      <p class="p-10 text-center text-ink-muted">Loading pattern…</p>
+    } @else if (error() || !detail()) {
+      <div class="flex items-center justify-between gap-4 p-6">
+        <p class="text-sm text-ink-muted">Could not load this pattern.</p>
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-ink-muted hover:bg-background hover:text-ink"
+          aria-label="Close"
+          data-testid="pattern-detail-close"
+          (click)="dismiss()"
+        >
+          <lucide-icon name="x" class="size-5" />
+        </button>
+      </div>
+    } @else {
+      <header class="flex items-start gap-3 border-b border-edge p-5">
+        @if (rank()) {
+          <span
+            class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary-soft"
+          >
+            {{ rank() }}
+          </span>
+        }
+        <div class="min-w-0 flex-1">
+          <h2 class="text-lg font-bold">{{ detail()!.title }}</h2>
+          <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
+            <span class="flex items-center gap-1.5">
+              <lucide-icon name="trending-up" class="size-3.5" />
+              {{ detail()!.eloRating | number: '1.0-0' }} ELO
+            </span>
+            <span class="flex items-center gap-1.5">
+              <lucide-icon name="swords" class="size-3.5" />
+              @if (detail()!.winRate !== null) {
+                {{ detail()!.winRate | percent: '1.0-0' }} win rate
+              } @else {
+                no votes
+              }
+            </span>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="rounded-lg p-1.5 text-ink-muted hover:bg-background hover:text-ink"
+          aria-label="Close"
+          data-testid="pattern-detail-close"
+          (click)="dismiss()"
+        >
+          <lucide-icon name="x" class="size-5" />
+        </button>
+      </header>
+
+      <div class="min-h-0 flex-1 overflow-y-auto p-5">
+        <app-code-block [code]="detail()!.code" [language]="detail()!.language" />
+
+        <section class="mt-6">
+          <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+            <lucide-icon name="message-square" class="size-4 text-ink-muted" />
+            Comments
+            <span class="text-xs font-normal text-ink-muted">
+              ({{ detail()!.comments.length }})
+            </span>
+          </h3>
+
+          @if (detail()!.comments.length === 0) {
+            <div
+              class="rounded-xl border border-edge bg-background/50 p-6 text-center"
+              data-testid="comments-empty"
+            >
+              <p class="text-sm text-ink-muted">No comments yet</p>
+            </div>
+          } @else {
+            <ul class="space-y-3" data-testid="comment-list">
+              @for (c of detail()!.comments; track $index) {
+                <li class="rounded-xl border border-edge bg-background/50 p-3">
+                  <p class="whitespace-pre-wrap text-sm text-ink">{{ c.comment }}</p>
+                  <span class="mt-1.5 flex items-center gap-1.5 text-xs text-ink-muted">
+                    <lucide-icon name="clock" class="size-3" />
+                    {{ c.createdAt | relativeTime }}
+                  </span>
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      </div>
+    }
+  </div>
+</div>
