@@ -4,6 +4,7 @@ import com.mitchelnijdam.commonground.IntegrationTestBase
 import com.mitchelnijdam.commonground.label.LabelRepository
 import com.mitchelnijdam.commonground.label.LabelType
 import com.mitchelnijdam.commonground.pattern.PatternRepository
+import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.topic.TopicRepository
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -125,7 +126,7 @@ class ImportIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `a topic matched by question case-insensitively is reused`() {
-        topicRepository.save(com.mitchelnijdam.commonground.topic.Topic(question = "Existing Question?"))
+        topicRepository.save(Topic(question = "Existing Question?"))
 
         import(
             """
