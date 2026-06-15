@@ -22,12 +22,12 @@ abstract class IntegrationTestBase {
     @BeforeEach
     fun truncateAllTables() {
         val tables = jdbcTemplate.queryForList(
-            "select tablename from pg_tables where schemaname = 'common_ground' and tablename <> 'flyway_schema_history'",
+            "select tablename from pg_tables where schemaname = 'common_ground_schema' and tablename <> 'flyway_schema_history'",
             String::class.java,
         )
         if (tables.isNotEmpty()) {
             jdbcTemplate.execute(
-                "truncate table ${tables.joinToString { "common_ground.\"$it\"" }} restart identity cascade",
+                "truncate table ${tables.joinToString { "common_ground_schema.\"$it\"" }} restart identity cascade",
             )
         }
     }
