@@ -15,17 +15,17 @@ export class VotingApi {
 
   vote(
     winnerPatternId: number,
-    loserPatternId: number,
+    beatenPatternIds: number[],
     comment?: string,
   ): Observable<VoteResult> {
     return this.http.post<VoteResult>('/api/voting/vote', {
       winnerPatternId,
-      loserPatternId,
+      beatenPatternIds,
       comment: comment?.trim() || null,
     });
   }
 
-  skip(patternAId: number, patternBId: number, reason: SkipReason): Observable<void> {
-    return this.http.post<void>('/api/voting/skip', { patternAId, patternBId, reason });
+  skip(topicId: number, reason: SkipReason): Observable<void> {
+    return this.http.post<void>('/api/voting/skip', { topicId, reason });
   }
 }

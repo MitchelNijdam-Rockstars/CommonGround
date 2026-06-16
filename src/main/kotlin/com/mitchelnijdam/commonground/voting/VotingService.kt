@@ -2,6 +2,7 @@ package com.mitchelnijdam.commonground.voting
 
 import com.mitchelnijdam.commonground.pattern.Pattern
 import com.mitchelnijdam.commonground.pattern.PatternRepository
+import com.mitchelnijdam.commonground.topic.TopicRepository
 import com.mitchelnijdam.commonground.user.User
 import com.mitchelnijdam.commonground.user.UserRepository
 import org.springframework.http.HttpStatus
@@ -16,23 +17,28 @@ class VotingService(
     private val voteRepository: VoteRepository,
     private val skipRepository: SkipRepository,
     private val userRepository: UserRepository,
+    private val topicRepository: TopicRepository,
 ) {
 
     /**
-     * Records a Vote and atomically updates both Patterns' ELO ratings and win-rate counters.
-     * Everything happens in one transaction: either the Vote and both rating updates land, or none.
+     * Records a Vote: the winner was picked over every pattern in [beatenPatternIds] (one for a
+     * pairwise vote, N-1 when all of a topic's patterns are shown). Atomically updates ELO and
+     * win-rate counters for every pattern involved: either the Vote and all updates land, or none.
      */
     @Transactional
-    fun castVote(user: User, winnerPatternId: Long, loserPatternId: Long, comment: String? = null): VoteResultDto {
-        val (winner, loser) = loadMatchupPatterns(winnerPatternId, loserPatternId)
+    fun castVote(user: User, winnerPatternId: Long, beatenPatternIds: List<Long>, comment: String? = null): VoteResultDto {
+        val (winner, beaten) = loadVotePatterns(winnerPatternId, beatenPatternIds)
 
-        val (newWinnerRating, newLoserRating) = EloCalculator.ratingsAfterWin(winner.eloRating, loser.eloRating)
+        val (newWinnerRating, newLoserRatings) =
+            EloCalculator.ratingsAfterWinAgainstAll(winner.eloRating, beaten.map { it.eloRating })
         winner.eloRating = newWinnerRating
         winner.timesShown += 1
         winner.timesChosen += 1
-        loser.eloRating = newLoserRating
-        loser.timesShown += 1
-        patternRepository.saveAll(listOf(winner, loser))
+        beaten.forEachIndexed { i, loser ->
+            loser.eloRating = newLoserRatings[i]
+            loser.timesShown += 1
+        }
+        patternRepository.saveAll(listOf(winner) + beaten)
 
         val voter = userRepository.findById(user.id).orElseThrow()
         val vote = voteRepository.save(
@@ -40,7 +46,7 @@ class VotingService(
                 user = voter,
                 topic = winner.topic,
                 winnerPattern = winner,
-                loserPattern = loser,
+                beatenPatterns = beaten.toSet(),
                 comment = comment?.trim()?.ifBlank { null },
             ),
         )
@@ -48,7 +54,6 @@ class VotingService(
         return VoteResultDto(
             voteId = vote.id,
             winnerNewRating = newWinnerRating,
-            loserNewRating = newLoserRating,
             currentStreak = streak,
         )
     }
@@ -68,25 +73,27 @@ class VotingService(
         return voter.currentStreak
     }
 
-    /** Records a Skip with its reason. ELO ratings and counters are deliberately untouched. */
+    /** Records a topic-level Skip with its reason. ELO ratings and counters are deliberately untouched. */
     @Transactional
-    fun recordSkip(user: User, patternAId: Long, patternBId: Long, reason: SkipReason) {
-        val (patternA, patternB) = loadMatchupPatterns(patternAId, patternBId)
-        skipRepository.save(
-            Skip(user = user, topic = patternA.topic, patternA = patternA, patternB = patternB, reason = reason),
-        )
+    fun recordSkip(user: User, topicId: Long, reason: SkipReason) {
+        val topic = topicRepository.findById(topicId)
+            .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Topic $topicId not found") }
+        skipRepository.save(Skip(user = user, topic = topic, reason = reason))
     }
 
-    private fun loadMatchupPatterns(firstId: Long, secondId: Long): Pair<Pattern, Pattern> {
-        if (firstId == secondId) {
-            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "A matchup needs two distinct patterns")
+    private fun loadVotePatterns(winnerId: Long, beatenIds: List<Long>): Pair<Pattern, List<Pattern>> {
+        if (winnerId in beatenIds) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "The winner cannot also be a beaten pattern")
         }
-        val first = loadActivePattern(firstId)
-        val second = loadActivePattern(secondId)
-        if (first.topic.id != second.topic.id) {
+        if (beatenIds.toSet().size != beatenIds.size) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Beaten patterns must be distinct")
+        }
+        val winner = loadActivePattern(winnerId)
+        val beaten = beatenIds.map { loadActivePattern(it) }
+        if (beaten.any { it.topic.id != winner.topic.id }) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Patterns must belong to the same topic")
         }
-        return first to second
+        return winner to beaten
     }
 
     private fun loadActivePattern(patternId: Long): Pattern {

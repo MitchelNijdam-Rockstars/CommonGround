@@ -1,6 +1,5 @@
 package com.mitchelnijdam.commonground.voting
 
-import com.mitchelnijdam.commonground.pattern.Pattern
 import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.user.User
 import jakarta.persistence.Column
@@ -30,14 +29,6 @@ data class Skip(
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "topic_id")
     val topic: Topic,
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pattern_a_id")
-    val patternA: Pattern,
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pattern_b_id")
-    val patternB: Pattern,
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

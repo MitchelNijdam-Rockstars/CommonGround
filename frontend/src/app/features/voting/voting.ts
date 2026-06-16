@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Matchup, SkipReason } from '../../core/models/matchup.model';
+import { Pattern } from '../../core/models/pattern.model';
 import { Auth } from '../../core/services/auth';
 import { VotingApi } from '../../core/services/voting-api';
 import { CodeBlock } from '../../shared/components/code-block/code-block';
@@ -35,10 +36,12 @@ export class Voting implements OnInit {
     this.loadBatch();
   }
 
-  vote(winnerPatternId: number, loserPatternId: number): void {
-    if (this.submitting()) return;
+  vote(winner: Pattern): void {
+    const matchup = this.current();
+    if (!matchup || this.submitting()) return;
     this.submitting.set(true);
-    this.api.vote(winnerPatternId, loserPatternId, this.comment).subscribe({
+    const beatenPatternIds = matchup.patterns.filter((p) => p.id !== winner.id).map((p) => p.id);
+    this.api.vote(winner.id, beatenPatternIds, this.comment).subscribe({
       next: (result) => {
         this.streak.set(result.currentStreak);
         this.afterSubmission();
@@ -51,7 +54,7 @@ export class Voting implements OnInit {
     const matchup = this.current();
     if (!matchup || this.submitting()) return;
     this.submitting.set(true);
-    this.api.skip(matchup.patternA.id, matchup.patternB.id, reason).subscribe({
+    this.api.skip(matchup.topic.id, reason).subscribe({
       next: () => this.afterSubmission(),
       error: () => this.submitting.set(false),
     });

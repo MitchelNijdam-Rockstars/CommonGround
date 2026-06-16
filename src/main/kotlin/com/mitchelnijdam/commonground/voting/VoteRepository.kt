@@ -17,12 +17,7 @@ interface VoteRepository : JpaRepository<Vote, Long> {
     )
     fun findCommentsForWinnerPattern(patternId: Long): List<Vote>
 
-    /** Unordered pattern pairs this user has already voted on, as "smallerId:largerId" keys. */
-    @Query(
-        """
-        select concat(least(v.winnerPattern.id, v.loserPattern.id), ':', greatest(v.winnerPattern.id, v.loserPattern.id))
-        from Vote v where v.user.id = :userId
-        """,
-    )
-    fun findVotedPairKeysByUserId(userId: Long): Set<String>
+    /** Topic ids this user has already voted on (one preference per topic hides it afterwards). */
+    @Query("select distinct v.topic.id from Vote v where v.user.id = :userId")
+    fun findVotedTopicIdsByUserId(userId: Long): Set<Long>
 }

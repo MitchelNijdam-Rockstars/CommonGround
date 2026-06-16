@@ -26,10 +26,7 @@
           </span>
           <span class="flex items-center gap-4">
             @if (streak() > 1) {
-              <span
-                class="flex items-center gap-1 font-semibold text-streak"
-                data-testid="streak"
-              >
+              <span class="flex items-center gap-1 font-semibold text-streak" data-testid="streak">
                 <lucide-icon name="flame" class="size-4" />
                 {{ streak() }} day streak
               </span>
@@ -55,32 +52,21 @@
           }
         </header>
 
-        <div class="grid gap-4 md:grid-cols-2">
-          <button
-            type="button"
-            data-testid="pattern-a"
-            (click)="vote(matchup.patternA.id, matchup.patternB.id)"
-            [disabled]="submitting()"
-            class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
-          >
-            <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
-              {{ matchup.patternA.title }}
-            </h2>
-            <app-code-block [code]="matchup.patternA.code" [language]="matchup.patternA.language" />
-          </button>
-
-          <button
-            type="button"
-            data-testid="pattern-b"
-            (click)="vote(matchup.patternB.id, matchup.patternA.id)"
-            [disabled]="submitting()"
-            class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
-          >
-            <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
-              {{ matchup.patternB.title }}
-            </h2>
-            <app-code-block [code]="matchup.patternB.code" [language]="matchup.patternB.language" />
-          </button>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          @for (pattern of matchup.patterns; track pattern.id) {
+            <button
+              type="button"
+              data-testid="pattern"
+              (click)="vote(pattern)"
+              [disabled]="submitting()"
+              class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
+            >
+              <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
+                {{ pattern.title }}
+              </h2>
+              <app-code-block [code]="pattern.code" [language]="pattern.language" />
+            </button>
+          }
         </div>
 
         <div class="mx-auto mt-5 max-w-2xl">

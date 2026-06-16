@@ -20,4 +20,16 @@ object EloCalculator {
         val newLoser = loserRating + K_FACTOR * (0.0 - expectedScore(loserRating, winnerRating))
         return newWinner to newLoser
     }
+
+    /**
+     * One pick out of many: the winner beat each [loserRatings] entry. Each pairwise delta is
+     * computed against the pre-vote ratings (so the result is order-independent); the winner's
+     * gains are summed. Returns the new winner rating and the new rating per loser, in input order.
+     * A single loser reduces to [ratingsAfterWin].
+     */
+    fun ratingsAfterWinAgainstAll(winnerRating: Double, loserRatings: List<Double>): Pair<Double, List<Double>> {
+        val newWinner = winnerRating + loserRatings.sumOf { K_FACTOR * (1.0 - expectedScore(winnerRating, it)) }
+        val newLosers = loserRatings.map { it + K_FACTOR * (0.0 - expectedScore(it, winnerRating)) }
+        return newWinner to newLosers
+    }
 }

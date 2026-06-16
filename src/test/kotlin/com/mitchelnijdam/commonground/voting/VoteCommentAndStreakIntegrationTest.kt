@@ -59,7 +59,7 @@ class VoteCommentAndStreakIntegrationTest : IntegrationTestBase() {
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 buildString {
-                    append("""{"winnerPatternId": ${patternA.id}, "loserPatternId": ${patternB.id}""")
+                    append("""{"winnerPatternId": ${patternA.id}, "beatenPatternIds": [${patternB.id}]""")
                     if (comment != null) append(""", "comment": "$comment"""")
                     append("}")
                 },

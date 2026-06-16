@@ -25,15 +25,15 @@ _Avoid_: LabelKind, LabelCategory
 ### Voting actions
 
 **Vote**:
-A record of a User choosing one Pattern over another in a head-to-head comparison. Captures the winning Pattern, the losing Pattern, and the voter. The unit on which ELO and win rate are computed.
+A record of a User picking one favorite Pattern out of all the Patterns shown for a Topic. Captures the winning Pattern, the Patterns it beat (the other options shown), and the voter. The winner is treated as beating each of those Patterns, so ELO and win rate are still computed from pairwise outcomes — one outcome when two Patterns are shown, N-1 when all are.
 _Avoid_: Choice, Selection, Pick
 
 **Skip**:
-A record of a User declining to choose between two shown Patterns. Captures both Patterns shown, the voter, and a mandatory SkipReason.
+A record of a User declining to pick a favorite for a Topic. Captures the Topic, the voter, and a mandatory SkipReason. The whole Topic is skipped, not an individual pair.
 _Avoid_: Pass, Abstain
 
 **SkipReason**:
-The reason a User skipped a head-to-head. Fixed enum: `NO_PREFERENCE` (seen both, genuinely no preference), `NOT_FAMILIAR` (insufficient domain knowledge to judge).
+The reason a User skipped a Topic. Fixed enum: `NO_PREFERENCE` (saw the options, genuinely no preference), `NOT_FAMILIAR` (insufficient domain knowledge to judge).
 _Avoid_: SkipType, SkipCause
 
 ### Dataset management
@@ -64,7 +64,7 @@ _Avoid_: Voter, Developer, Participant
 >
 > **Dev**: "And when I vote, what exactly am I doing?"
 >
-> **Domain expert**: "You're shown two Patterns from the same Topic. You either cast a Vote — picking one over the other — or you Skip with a reason. Every Vote updates the ELO score and win rate of both Patterns involved."
+> **Domain expert**: "You're shown all the Patterns for one Topic at once. You either cast a Vote — picking your single favorite, which is treated as beating every other shown Pattern — or you Skip the whole Topic with a reason. Every Vote updates the ELO score and win rate of all the Patterns involved."
 
 ## Flagged ambiguities
 

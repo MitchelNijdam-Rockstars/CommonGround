@@ -118,8 +118,8 @@ class RankingsIntegrationTest : IntegrationTestBase() {
         val topic = topicRepository.save(Topic(question = "Vote count topic?"))
         val a = patternRepository.save(Pattern(topic = topic, title = "A", code = "a", language = "kotlin"))
         val b = patternRepository.save(Pattern(topic = topic, title = "B", code = "b", language = "kotlin"))
-        voteRepository.save(Vote(topic = topic, winnerPattern = a, loserPattern = b, user = voter))
-        voteRepository.save(Vote(topic = topic, winnerPattern = b, loserPattern = a, user = voter))
+        voteRepository.save(Vote(topic = topic, winnerPattern = a, beatenPatterns = setOf(b), user = voter))
+        voteRepository.save(Vote(topic = topic, winnerPattern = b, beatenPatterns = setOf(a), user = voter))
 
         // a topic with only an inactive pattern must be excluded
         val emptyTopic = topicRepository.save(Topic(question = "No active patterns?"))
