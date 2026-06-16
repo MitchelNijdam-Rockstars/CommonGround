@@ -3,6 +3,7 @@ package com.mitchelnijdam.commonground.pattern
 import com.mitchelnijdam.commonground.IntegrationTestBase
 import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.topic.TopicRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +16,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import kotlin.test.assertEquals
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -56,10 +56,10 @@ class PatternIntegrationTest : IntegrationTestBase() {
     fun `created pattern starts with initial ELO and zero counters`() {
         val id = createPattern("Nullable return")
         val pattern = patternRepository.findById(id).orElseThrow()
-        assertEquals(1500.0, pattern.eloRating)
-        assertEquals(0, pattern.timesShown)
-        assertEquals(0, pattern.timesChosen)
-        assertEquals(true, pattern.active)
+        assertThat(pattern.eloRating).isEqualTo(1500.0)
+        assertThat(pattern.timesShown).isEqualTo(0)
+        assertThat(pattern.timesChosen).isEqualTo(0)
+        assertThat(pattern.active).isTrue()
     }
 
     @Test
@@ -82,16 +82,16 @@ class PatternIntegrationTest : IntegrationTestBase() {
         val id = createPattern("Nullable return")
         mockMvc.perform(patch("/api/admin/patterns/$id/deactivate")).andExpect(status().isOk)
         val pattern = patternRepository.findById(id).orElseThrow()
-        assertEquals(false, pattern.active)
+        assertThat(pattern.active).isFalse()
     }
 
     @Test
     fun `topics need at least two active patterns to be matchup-eligible`() {
         createPattern("Only one")
-        assertEquals(emptyList(), patternRepository.findTopicIdsWithAtLeastTwoActivePatterns())
+        assertThat(patternRepository.findTopicIdsWithAtLeastTwoActivePatterns()).isEmpty()
 
         createPattern("A second")
-        assertEquals(listOf(topicId), patternRepository.findTopicIdsWithAtLeastTwoActivePatterns())
+        assertThat(patternRepository.findTopicIdsWithAtLeastTwoActivePatterns()).containsExactly(topicId)
     }
 
     @Test

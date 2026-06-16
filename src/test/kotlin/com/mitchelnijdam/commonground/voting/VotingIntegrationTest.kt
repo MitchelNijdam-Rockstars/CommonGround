@@ -16,10 +16,10 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -79,13 +79,13 @@ class VotingIntegrationTest : IntegrationTestBase() {
         val winner = patternRepository.findById(patternA.id).orElseThrow()
         val loser = patternRepository.findById(patternB.id).orElseThrow()
 
-        assertEquals(1516.0, winner.eloRating, 0.0001)
-        assertEquals(1, winner.timesShown)
-        assertEquals(1, winner.timesChosen)
-        assertEquals(1484.0, loser.eloRating, 0.0001)
-        assertEquals(1, loser.timesShown)
-        assertEquals(0, loser.timesChosen)
-        assertEquals(1, voteRepository.count())
+        assertThat(winner.eloRating).isCloseTo(1516.0, within(0.0001))
+        assertThat(winner.timesShown).isEqualTo(1)
+        assertThat(winner.timesChosen).isEqualTo(1)
+        assertThat(loser.eloRating).isCloseTo(1484.0, within(0.0001))
+        assertThat(loser.timesShown).isEqualTo(1)
+        assertThat(loser.timesChosen).isEqualTo(0)
+        assertThat(voteRepository.count()).isEqualTo(1L)
     }
 
     @Test
@@ -97,13 +97,13 @@ class VotingIntegrationTest : IntegrationTestBase() {
         ).andExpect(status().isNoContent)
 
         val a = patternRepository.findById(patternA.id).orElseThrow()
-        assertEquals(1500.0, a.eloRating, 0.0001)
-        assertEquals(0, a.timesShown)
-        assertEquals(0, a.timesChosen)
+        assertThat(a.eloRating).isCloseTo(1500.0, within(0.0001))
+        assertThat(a.timesShown).isEqualTo(0)
+        assertThat(a.timesChosen).isEqualTo(0)
 
         val skips = skipRepository.findAll()
-        assertEquals(1, skips.size)
-        assertEquals(SkipReason.NOT_FAMILIAR, skips.first().reason)
+        assertThat(skips).hasSize(1)
+        assertThat(skips.first().reason).isEqualTo(SkipReason.NOT_FAMILIAR)
     }
 
     @Test
@@ -127,17 +127,17 @@ class VotingIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val matchups = parseArray(json)
-        assertEquals(2, matchups.size)
+        assertThat(matchups).hasSize(2)
 
         val topicIds = matchups.map { it.get("topic").get("id").asLong() }
-        assertEquals(topicIds.toSet().size, topicIds.size, "topics must not repeat in a batch")
+        assertThat(topicIds).describedAs("topics must not repeat in a batch").doesNotHaveDuplicates()
 
         val pairKeys = matchups.map {
             val a = it.get("patternA").get("id").asLong()
             val b = it.get("patternB").get("id").asLong()
             MatchupService.pairKey(a, b)
         }
-        assertEquals(pairKeys.toSet().size, pairKeys.size, "pairs must not repeat in a batch")
+        assertThat(pairKeys).describedAs("pairs must not repeat in a batch").doesNotHaveDuplicates()
     }
 
     @Test
@@ -150,7 +150,7 @@ class VotingIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val topicIds = parseArray(json).map { it.get("topic").get("id").asLong() }
-        assertTrue(sparseTopic.id !in topicIds)
+        assertThat(topicIds).doesNotContain(sparseTopic.id)
     }
 
     @Test
@@ -184,11 +184,11 @@ class VotingIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val matchups = parseArray(json)
-        assertEquals(1, matchups.size)
+        assertThat(matchups).hasSize(1)
         val servedIds = setOf(
             matchups[0].get("patternA").get("id").asLong(),
             matchups[0].get("patternB").get("id").asLong(),
         )
-        assertEquals(setOf(p3.id, p4.id), servedIds, "the unseen pair should be preferred")
+        assertThat(servedIds).describedAs("the unseen pair should be preferred").isEqualTo(setOf(p3.id, p4.id))
     }
 }

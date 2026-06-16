@@ -17,9 +17,9 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.assertj.core.api.Assertions.assertThat
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
-import kotlin.test.assertEquals
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -65,9 +65,9 @@ class RankingsIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val sections = parseArray(json)
-        assertEquals(1, sections.size)
+        assertThat(sections).hasSize(1)
         val patterns = (0 until sections[0].get("patterns").size()).map { sections[0].get("patterns").get(it) }
-        assertEquals(listOf("High", "Mid", "Low"), patterns.map { it.get("title").asString() })
+        assertThat(patterns.map { it.get("title").asString() }).containsExactly("High", "Mid", "Low")
     }
 
     @Test
@@ -89,7 +89,7 @@ class RankingsIntegrationTest : IntegrationTestBase() {
 
         val sections = parseArray(json)
         val patterns = (0 until sections[0].get("patterns").size()).map { sections[0].get("patterns").get(it) }
-        assertEquals(listOf("Best", "Worst", "Unseen"), patterns.map { it.get("title").asString() })
+        assertThat(patterns.map { it.get("title").asString() }).containsExactly("Best", "Worst", "Unseen")
     }
 
     @Test
@@ -109,7 +109,7 @@ class RankingsIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val patterns = parseArray(json)[0].get("patterns")
-        assertEquals("High", patterns.get(0).get("title").asString())
+        assertThat(patterns.get(0).get("title").asString()).isEqualTo("High")
     }
 
     @Test
@@ -130,8 +130,8 @@ class RankingsIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val sections = parseArray(json)
-        assertEquals(1, sections.size)
-        assertEquals(topic.id, sections[0].get("topic").get("id").asLong())
-        assertEquals(2, sections[0].get("totalVotes").asInt())
+        assertThat(sections).hasSize(1)
+        assertThat(sections[0].get("topic").get("id").asLong()).isEqualTo(topic.id)
+        assertThat(sections[0].get("totalVotes").asInt()).isEqualTo(2)
     }
 }

@@ -4,6 +4,7 @@ import com.mitchelnijdam.commonground.IntegrationTestBase
 import com.mitchelnijdam.commonground.pattern.PatternRepository
 import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.topic.TopicRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +16,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import kotlin.test.assertEquals
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -77,16 +77,16 @@ class PatternSuggestionIntegrationTest : IntegrationTestBase() {
             .andExpect(jsonPath("$.status").value("APPROVED"))
 
         val patterns = patternRepository.findByTopicIdAndActiveTrue(topicId)
-        assertEquals(1, patterns.size)
+        assertThat(patterns).hasSize(1)
         with(patterns.single()) {
-            assertEquals("Constructor injection", title)
-            assertEquals(1500.0, eloRating)
-            assertEquals(0, timesShown)
-            assertEquals(0, timesChosen)
-            assertEquals(true, active)
+            assertThat(title).isEqualTo("Constructor injection")
+            assertThat(eloRating).isEqualTo(1500.0)
+            assertThat(timesShown).isEqualTo(0)
+            assertThat(timesChosen).isEqualTo(0)
+            assertThat(active).isTrue()
         }
         // the suggestion remains as a historical record
-        assertEquals(SuggestionStatus.APPROVED, patternSuggestionRepository.findById(id).orElseThrow().status)
+        assertThat(patternSuggestionRepository.findById(id).orElseThrow().status).isEqualTo(SuggestionStatus.APPROVED)
     }
 
     @Test
@@ -102,7 +102,7 @@ class PatternSuggestionIntegrationTest : IntegrationTestBase() {
             .andExpect(jsonPath("$.status").value("REJECTED"))
             .andExpect(jsonPath("$.rejectionReason").value("Duplicate of an existing pattern"))
 
-        assertEquals(0, patternRepository.findByTopicIdAndActiveTrue(topicId).size)
+        assertThat(patternRepository.findByTopicIdAndActiveTrue(topicId)).isEmpty()
     }
 
     @Test
@@ -132,6 +132,6 @@ class PatternSuggestionIntegrationTest : IntegrationTestBase() {
         mockMvc.perform(post("/api/admin/suggestions/patterns/$id/approve")).andExpect(status().isOk)
 
         val pattern = patternRepository.findByTopicIdAndActiveTrue(topicId).single()
-        assertEquals("Community suggestion #$id", pattern.title)
+        assertThat(pattern.title).isEqualTo("Community suggestion #$id")
     }
 }

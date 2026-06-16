@@ -148,6 +148,12 @@ Of course, when extra grouping within a feature package is practical and clean, 
 - Tailwind is used for styling
 - Lucide is used for icons (<lucide-icon name="home" />)
 
+## Code style
+
+### Tests
+
+- Use **AssertJ** (`org.assertj.core.api.Assertions.assertThat`) for all assertions in backend (Kotlin/JUnit) tests. Do not use `kotlin.test` (`assertEquals`, `assertTrue`, `assertNull`, …) or JUnit's `Assertions`. AssertJ ships transitively via Spring Boot's test starters — no extra dependency is needed.
+
 ## Configuration
 
 | Profile | Port | Notes |

@@ -17,9 +17,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.assertj.core.api.Assertions.assertThat
 import java.time.LocalDate
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -70,19 +69,19 @@ class VoteCommentAndStreakIntegrationTest : IntegrationTestBase() {
     @Test
     fun `a vote can carry an optional comment`() {
         vote("Explicit is better than implicit").andExpect(status().isOk)
-        assertEquals("Explicit is better than implicit", voteRepository.findAll().single().comment)
+        assertThat(voteRepository.findAll().single().comment).isEqualTo("Explicit is better than implicit")
     }
 
     @Test
     fun `a vote without comment stores null`() {
         vote().andExpect(status().isOk)
-        assertNull(voteRepository.findAll().single().comment)
+        assertThat(voteRepository.findAll().single().comment).isNull()
     }
 
     @Test
     fun `comments longer than 500 characters are rejected`() {
         vote("x".repeat(501)).andExpect(status().isBadRequest)
-        assertEquals(0, voteRepository.count())
+        assertThat(voteRepository.count()).isEqualTo(0L)
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.mitchelnijdam.commonground.user
 
 import com.mitchelnijdam.commonground.IntegrationTestBase
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
@@ -9,8 +10,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -40,11 +39,11 @@ class UserAuthenticationIntegrationTest : IntegrationTestBase() {
     fun `user record is created on first login and reused on subsequent logins`() {
         mockMvc.perform(get("/api/users/me")).andExpect(status().isOk)
         val firstId = userRepository.findByEmailIgnoreCase("admin@test.dev")?.id
-        assertNotNull(firstId)
+        assertThat(firstId).isNotNull()
 
         mockMvc.perform(get("/api/users/me")).andExpect(status().isOk)
-        assertEquals(firstId, userRepository.findByEmailIgnoreCase("admin@test.dev")?.id)
-        assertEquals(1, userRepository.findAll().count { it.email == "admin@test.dev" })
+        assertThat(userRepository.findByEmailIgnoreCase("admin@test.dev")?.id).isEqualTo(firstId)
+        assertThat(userRepository.findAll().count { it.email == "admin@test.dev" }).isEqualTo(1)
     }
 
     @Test

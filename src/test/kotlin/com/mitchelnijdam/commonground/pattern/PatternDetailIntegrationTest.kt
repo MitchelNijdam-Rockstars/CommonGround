@@ -17,12 +17,10 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.assertj.core.api.Assertions.assertThat
 import tools.jackson.databind.JsonNode
 import tools.jackson.databind.ObjectMapper
 import java.time.Instant
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -95,7 +93,7 @@ class PatternDetailIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val comments = parseArray(objectMapper.readTree(json).get("comments"))
-        assertEquals(listOf("newest", "middle", "oldest"), comments.map { it.get("comment").asString() })
+        assertThat(comments.map { it.get("comment").asString() }).containsExactly("newest", "middle", "oldest")
     }
 
     @Test
@@ -109,7 +107,7 @@ class PatternDetailIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val comments = parseArray(objectMapper.readTree(json).get("comments"))
-        assertEquals(listOf("real comment"), comments.map { it.get("comment").asString() })
+        assertThat(comments.map { it.get("comment").asString() }).containsExactly("real comment")
     }
 
     @Test
@@ -122,7 +120,7 @@ class PatternDetailIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
 
         val comments = parseArray(objectMapper.readTree(json).get("comments"))
-        assertTrue(comments.isEmpty())
+        assertThat(comments).isEmpty()
     }
 
     @Test
@@ -147,8 +145,6 @@ class PatternDetailIntegrationTest : IntegrationTestBase() {
             .andExpect(status().isOk)
             .andReturn().response.contentAsString
 
-        assertFalse(json.contains("voter@test.dev"))
-        assertFalse(json.contains("\"user\""))
-        assertFalse(json.contains("\"email\""))
+        assertThat(json).doesNotContain("voter@test.dev", "\"user\"", "\"email\"")
     }
 }

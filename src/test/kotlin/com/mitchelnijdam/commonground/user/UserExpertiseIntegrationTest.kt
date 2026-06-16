@@ -19,8 +19,8 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.assertj.core.api.Assertions.assertThat
 import tools.jackson.databind.ObjectMapper
-import kotlin.test.assertTrue
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -101,8 +101,8 @@ class UserExpertiseIntegrationTest : IntegrationTestBase() {
                 .andReturn().response.contentAsString
             val node = objectMapper.readTree(json)
             val questions = (0 until node.size()).map { node.get(it).get("topic").get("question").asText() }
-            assertTrue(questions.isNotEmpty())
-            assertTrue(questions.all { it == "Kotlin topic?" }, "only Kotlin topics expected, got $questions")
+            assertThat(questions).isNotEmpty()
+            assertThat(questions).describedAs("only Kotlin topics expected").containsOnly("Kotlin topic?")
         }
     }
 
@@ -113,7 +113,7 @@ class UserExpertiseIntegrationTest : IntegrationTestBase() {
             .andReturn().response.contentAsString
         val node = objectMapper.readTree(json)
         val questions = (0 until node.size()).map { node.get(it).get("topic").get("question").asText() }
-        assertTrue(questions.containsAll(listOf("Kotlin topic?", "TypeScript topic?")))
+        assertThat(questions).contains("Kotlin topic?", "TypeScript topic?")
     }
 
     @Test

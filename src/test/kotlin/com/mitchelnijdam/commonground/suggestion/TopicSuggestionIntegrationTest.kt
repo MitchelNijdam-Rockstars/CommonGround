@@ -5,6 +5,7 @@ import com.mitchelnijdam.commonground.label.Label
 import com.mitchelnijdam.commonground.label.LabelRepository
 import com.mitchelnijdam.commonground.label.LabelType
 import com.mitchelnijdam.commonground.topic.TopicRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
@@ -15,7 +16,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import kotlin.test.assertEquals
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -68,7 +68,7 @@ class TopicSuggestionIntegrationTest : IntegrationTestBase() {
 
         // findAll fetches labels eagerly via the EntityGraph
         val topic = topicRepository.findAll().single { it.question == "How to model domain errors?" }
-        assertEquals(setOf("Kotlin"), topic.labels.map { it.name }.toSet())
+        assertThat(topic.labels.map { it.name }).containsExactlyInAnyOrder("Kotlin")
 
         // visible in the catalog
         mockMvc.perform(get("/api/topics").param("search", "domain errors"))
@@ -93,7 +93,7 @@ class TopicSuggestionIntegrationTest : IntegrationTestBase() {
             .andExpect(jsonPath("$.status").value("REJECTED"))
             .andExpect(jsonPath("$.rejectionReason").value("Off-topic for this instance"))
 
-        assertEquals(0, topicRepository.count())
+        assertThat(topicRepository.count()).isEqualTo(0L)
     }
 
     @Test

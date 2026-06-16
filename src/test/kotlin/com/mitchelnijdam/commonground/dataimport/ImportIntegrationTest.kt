@@ -6,6 +6,7 @@ import com.mitchelnijdam.commonground.label.LabelType
 import com.mitchelnijdam.commonground.pattern.PatternRepository
 import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.topic.TopicRepository
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
@@ -16,7 +17,6 @@ import org.springframework.test.web.servlet.ResultActions
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import kotlin.test.assertEquals
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -71,12 +71,12 @@ class ImportIntegrationTest : IntegrationTestBase() {
 
         val topic = topicRepository.findByQuestionIgnoreCase("How should null values be handled in Kotlin?")!!
         val patterns = patternRepository.findByTopicIdAndActiveTrue(topic.id)
-        assertEquals(2, patterns.size)
+        assertThat(patterns).hasSize(2)
         with(patterns.first()) {
-            assertEquals(1500.0, eloRating)
-            assertEquals(0, timesShown)
-            assertEquals(0, timesChosen)
-            assertEquals(true, active)
+            assertThat(eloRating).isEqualTo(1500.0)
+            assertThat(timesShown).isEqualTo(0)
+            assertThat(timesChosen).isEqualTo(0)
+            assertThat(active).isTrue()
         }
     }
 
@@ -92,9 +92,9 @@ class ImportIntegrationTest : IntegrationTestBase() {
             .andExpect(jsonPath("$.patternsSkipped").value(2))
             .andExpect(jsonPath("$.labelsCreated").value(0))
 
-        assertEquals(1, topicRepository.findAll().size)
-        assertEquals(2, patternRepository.findByActiveTrue().size)
-        assertEquals(2, labelRepository.findAll().size)
+        assertThat(topicRepository.findAll()).hasSize(1)
+        assertThat(patternRepository.findByActiveTrue()).hasSize(2)
+        assertThat(labelRepository.findAll()).hasSize(2)
     }
 
     @Test
@@ -118,10 +118,10 @@ class ImportIntegrationTest : IntegrationTestBase() {
             .andExpect(jsonPath("$.labelsCreated").value(2))
 
         val labels = labelRepository.findAll().associateBy { it.name }
-        assertEquals(3, labels.size)
-        assertEquals(LabelType.LANGUAGE, labels["Kotlin"]!!.labelType)
-        assertEquals(LabelType.LANGUAGE, labels["python"]!!.labelType)
-        assertEquals(LabelType.STYLE, labels["MyCustomTag"]!!.labelType)
+        assertThat(labels).hasSize(3)
+        assertThat(labels["Kotlin"]!!.labelType).isEqualTo(LabelType.LANGUAGE)
+        assertThat(labels["python"]!!.labelType).isEqualTo(LabelType.LANGUAGE)
+        assertThat(labels["MyCustomTag"]!!.labelType).isEqualTo(LabelType.STYLE)
     }
 
     @Test
@@ -139,7 +139,7 @@ class ImportIntegrationTest : IntegrationTestBase() {
             .andExpect(jsonPath("$.topicsReused").value(1))
             .andExpect(jsonPath("$.patternsCreated").value(1))
 
-        assertEquals(1, topicRepository.findAll().size)
+        assertThat(topicRepository.findAll()).hasSize(1)
     }
 
     @Test

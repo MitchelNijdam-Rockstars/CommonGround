@@ -13,11 +13,8 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.assertj.core.api.Assertions.assertThat
 import java.time.LocalDate
-import kotlin.test.assertContains
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -49,10 +46,11 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
             .andReturn().response
 
         val disposition = response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
-        assertNotNull(disposition)
-        assertContains(disposition, "attachment")
-        assertContains(disposition, "common-ground-${LocalDate.now()}.md")
-        assertTrue(response.contentType?.startsWith("text/markdown") == true)
+        assertThat(disposition)
+            .isNotNull()
+            .contains("attachment")
+            .contains("common-ground-${LocalDate.now()}.md")
+        assertThat(response.contentType).startsWith("text/markdown")
     }
 
     @Test
@@ -69,13 +67,9 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
             .andExpect(status().isOk)
             .andReturn().response.contentAsString
 
-        assertContains(body, "## How to handle nulls?")
-        assertContains(body, "High elo")
-        assertContains(body, "```kotlin")
-        assertContains(body, "val winner = true")
+        assertThat(body).contains("## How to handle nulls?", "High elo", "```kotlin", "val winner = true")
         // The losing pattern must not appear.
-        assertFalse(body.contains("Low elo"))
-        assertFalse(body.contains("loser code"))
+        assertThat(body).doesNotContain("Low elo", "loser code")
     }
 
     @Test
@@ -94,8 +88,8 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
             .andExpect(status().isOk)
             .andReturn().response.contentAsString
 
-        assertContains(body, "## Voted topic?")
-        assertFalse(body.contains("Unvoted topic?"))
+        assertThat(body).contains("## Voted topic?")
+        assertThat(body).doesNotContain("Unvoted topic?")
     }
 
     @Test
@@ -108,7 +102,7 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
         val body1 = mockMvc.perform(get("/api/rankings/export")).andReturn().response.contentAsString
         val body2 = mockMvc.perform(get("/api/rankings/export")).andReturn().response.contentAsString
 
-        assertTrue(body1.indexOf("First question?") < body1.indexOf("Second question?"))
-        kotlin.test.assertEquals(body1, body2)
+        assertThat(body1.indexOf("First question?")).isLessThan(body1.indexOf("Second question?"))
+        assertThat(body2).isEqualTo(body1)
     }
 }
