@@ -30,6 +30,16 @@
           <span class="hidden sm:inline">Review</span>
         </a>
       }
+
+      <button
+        type="button"
+        (click)="aboutOpen.set(true)"
+        data-testid="navbar-about-button"
+        class="ml-auto flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-light hover:text-ink"
+      >
+        <lucide-icon name="info" class="size-4" />
+        <span class="hidden sm:inline">What is Common Ground?</span>
+      </button>
     </nav>
 
     @if (auth.user(); as user) {
@@ -140,3 +150,7 @@
     </div>
   }
 </header>
+
+@if (aboutOpen()) {
+  <app-about-dialog (closed)="aboutOpen.set(false)" />
+}

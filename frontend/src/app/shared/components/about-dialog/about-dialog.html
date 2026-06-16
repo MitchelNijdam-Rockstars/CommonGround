@@ -1,0 +1,136 @@
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4"
+  data-testid="about-dialog-backdrop"
+  (click)="dismiss()"
+>
+  <div
+    class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-edge bg-surface shadow-xl sm:rounded-2xl"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="about-dialog-title"
+    data-testid="about-dialog"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <header class="flex items-start justify-between gap-4 border-b border-edge p-5">
+      <div>
+        <h2 id="about-dialog-title" class="flex items-center gap-2 text-lg font-bold">
+          <lucide-icon name="info" class="size-5 text-primary" />
+          What is Common Ground?
+        </h2>
+        <p class="mt-1 text-sm text-ink-muted">
+          A quiz-style way to turn scattered opinions into shared coding standards.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 rounded-lg p-1.5 text-ink-muted hover:bg-background hover:text-ink"
+        aria-label="Close"
+        data-testid="about-dialog-close"
+        (click)="dismiss()"
+      >
+        <lucide-icon name="x" class="size-5" />
+      </button>
+    </header>
+
+    <div class="flex-1 space-y-6 overflow-y-auto p-5">
+      <!-- Intro -->
+      <p class="text-sm leading-relaxed text-ink">
+        Every team has unwritten opinions on how code <em>should</em> look — and they rarely agree.
+        Common Ground settles them democratically: everyone votes on competing coding styles, the
+        crowd's favorites rise to the top, and you can export the winners as a guide for your AI
+        coding agents. No more style debates in pull requests.
+      </p>
+
+      <!-- How to use -->
+      <div>
+        <h3 class="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+          How to use it
+        </h3>
+        <ol class="space-y-3">
+          <li class="flex gap-3">
+            <span
+              class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary"
+            >
+              1
+            </span>
+            <div class="text-sm leading-relaxed">
+              <span class="font-semibold">Vote.</span> You're shown a topic — a coding decision like
+              "How should you name boolean variables?" — with a few competing patterns. Pick your
+              favorite, or skip if you have no preference or it's outside your expertise.
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary"
+            >
+              2
+            </span>
+            <div class="text-sm leading-relaxed">
+              <span class="font-semibold">Browse the catalog.</span> Explore every topic and its
+              patterns, filtered by language and other labels. Missing a topic or a better approach?
+              Suggest one — an admin reviews it before it joins the pool.
+            </div>
+          </li>
+          <li class="flex gap-3">
+            <span
+              class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/15 text-sm font-bold text-primary"
+            >
+              3
+            </span>
+            <div class="text-sm leading-relaxed">
+              <span class="font-semibold">See the rankings.</span> Every vote feeds an ELO-style
+              ranking, so the patterns your team genuinely prefers float to the top — backed by
+              data, not by whoever argued loudest.
+            </div>
+          </li>
+        </ol>
+      </div>
+
+      <!-- Why -->
+      <div class="rounded-xl border border-edge bg-background/40 p-4">
+        <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+          <lucide-icon name="sparkles" class="size-4 text-accent" />
+          Why bother?
+        </h3>
+        <ul class="space-y-2.5 text-sm">
+          <li class="flex gap-2">
+            <lucide-icon name="users" class="mt-0.5 size-4 shrink-0 text-ink-muted" />
+            <span>
+              <span class="font-medium">Democratize your standards.</span> Turn the loudest-voice
+              debate into a fair, transparent vote everyone in the organization can take part in.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <lucide-icon name="bot" class="mt-0.5 size-4 shrink-0 text-ink-muted" />
+            <span>
+              <span class="font-medium">Instruct your AI coding agents.</span> Export the top-ranked
+              patterns as a Markdown rules file so tools like Claude Code write code the way your
+              team actually likes it.
+            </span>
+          </li>
+          <li class="flex gap-2">
+            <lucide-icon name="git-pull-request" class="mt-0.5 size-4 shrink-0 text-ink-muted" />
+            <span>
+              <span class="font-medium">Stop re-litigating in reviews.</span> Once the team has
+              spoken, you have a shared reference to point to instead of arguing the same style nits
+              over and over.
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="flex justify-end gap-2 border-t border-edge p-4">
+      <button
+        type="button"
+        (click)="dismiss()"
+        data-testid="about-dialog-done"
+        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
+      >
+        Got it
+      </button>
+    </footer>
+  </div>
+</div>

@@ -5,10 +5,11 @@ import { Label } from '../../core/models/label.model';
 import { Auth } from '../../core/services/auth';
 import { CatalogApi } from '../../core/services/catalog-api';
 import { Expertise } from '../../core/services/expertise';
+import { AboutDialog } from '../../shared/components/about-dialog/about-dialog';
 
 @Component({
   selector: 'app-navbar',
-  imports: [RouterLink, RouterLinkActive, LucideAngularModule],
+  imports: [RouterLink, RouterLinkActive, LucideAngularModule, AboutDialog],
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
 })
@@ -19,6 +20,7 @@ export class Navbar {
 
   protected readonly menuOpen = signal(false);
   protected readonly expertisePanelOpen = signal(false);
+  protected readonly aboutOpen = signal(false);
   protected readonly languageLabels = signal<Label[]>([]);
 
   protected readonly tabs = [

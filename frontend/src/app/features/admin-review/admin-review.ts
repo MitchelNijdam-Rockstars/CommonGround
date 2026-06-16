@@ -6,10 +6,11 @@ import { PatternSuggestion, TopicSuggestion } from '../../core/models/suggestion
 import { SuggestionsApi } from '../../core/services/suggestions-api';
 import { CodeBlock } from '../../shared/components/code-block/code-block';
 import { LabelBadge } from '../../shared/components/label-badge/label-badge';
+import { ImportDialog } from './components/import-dialog/import-dialog';
 
 @Component({
   selector: 'app-admin-review',
-  imports: [FormsModule, LucideAngularModule, CodeBlock, LabelBadge],
+  imports: [FormsModule, LucideAngularModule, CodeBlock, LabelBadge, ImportDialog],
   templateUrl: './admin-review.html',
   styleUrl: './admin-review.scss',
 })
@@ -19,6 +20,7 @@ export class AdminReview implements OnInit {
   protected readonly patternSuggestions = signal<PatternSuggestion[]>([]);
   protected readonly topicSuggestions = signal<TopicSuggestion[]>([]);
   protected readonly loading = signal(true);
+  protected readonly importOpen = signal(false);
 
   /** id of the suggestion whose rejection-reason input is open, prefixed by kind */
   protected readonly rejectingKey = signal<string | null>(null);
@@ -26,6 +28,13 @@ export class AdminReview implements OnInit {
 
   ngOnInit(): void {
     this.reload();
+  }
+
+  onImportClosed(imported: boolean): void {
+    this.importOpen.set(false);
+    if (imported) {
+      this.reload();
+    }
   }
 
   reload(): void {

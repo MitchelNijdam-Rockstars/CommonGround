@@ -1,0 +1,202 @@
+<div
+  class="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-0 sm:items-center sm:p-4"
+  data-testid="import-dialog-backdrop"
+  (click)="dismiss()"
+>
+  <div
+    class="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-edge bg-surface shadow-xl sm:rounded-2xl"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="import-dialog-title"
+    data-testid="import-dialog"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Header -->
+    <header class="flex items-start justify-between gap-4 border-b border-edge p-5">
+      <div>
+        <h2 id="import-dialog-title" class="flex items-center gap-2 text-lg font-bold">
+          <lucide-icon name="upload" class="size-5 text-primary" />
+          Import topics &amp; patterns
+        </h2>
+        <p class="mt-1 text-sm text-ink-muted">
+          Seed the voting pool by pasting a JSON file with topics and their patterns.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="shrink-0 rounded-lg p-1.5 text-ink-muted hover:bg-background hover:text-ink"
+        aria-label="Close"
+        data-testid="import-dialog-close"
+        (click)="dismiss()"
+      >
+        <lucide-icon name="x" class="size-5" />
+      </button>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-5">
+      @if (result(); as r) {
+        <!-- Success state -->
+        <div class="text-center">
+          <div
+            class="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/15 text-primary"
+          >
+            <lucide-icon name="check" class="size-6" />
+          </div>
+          <h3 class="text-base font-semibold">Import complete</h3>
+          <p class="mt-1 text-sm text-ink-muted">Here is what changed in the catalog.</p>
+
+          <dl class="mt-5 grid grid-cols-2 gap-3 text-left sm:grid-cols-3">
+            <div class="rounded-xl border border-edge bg-background/50 p-3">
+              <dt class="text-xs text-ink-muted">Topics created</dt>
+              <dd class="mt-0.5 text-xl font-bold text-primary">{{ r.topicsCreated }}</dd>
+            </div>
+            <div class="rounded-xl border border-edge bg-background/50 p-3">
+              <dt class="text-xs text-ink-muted">Topics reused</dt>
+              <dd class="mt-0.5 text-xl font-bold">{{ r.topicsReused }}</dd>
+            </div>
+            <div class="rounded-xl border border-edge bg-background/50 p-3">
+              <dt class="text-xs text-ink-muted">Patterns created</dt>
+              <dd class="mt-0.5 text-xl font-bold text-primary">{{ r.patternsCreated }}</dd>
+            </div>
+            <div class="rounded-xl border border-edge bg-background/50 p-3">
+              <dt class="text-xs text-ink-muted">Patterns skipped</dt>
+              <dd class="mt-0.5 text-xl font-bold">{{ r.patternsSkipped }}</dd>
+            </div>
+            <div class="rounded-xl border border-edge bg-background/50 p-3">
+              <dt class="text-xs text-ink-muted">Labels created</dt>
+              <dd class="mt-0.5 text-xl font-bold">{{ r.labelsCreated }}</dd>
+            </div>
+          </dl>
+        </div>
+      } @else {
+        <!-- Help panel -->
+        <div class="rounded-xl border border-edge bg-background/40">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-2 px-4 py-3 text-left"
+            (click)="toggleHelp()"
+            [attr.aria-expanded]="helpOpen()"
+          >
+            <span class="flex items-center gap-2 text-sm font-semibold">
+              <lucide-icon name="info" class="size-4 text-primary" />
+              How importing works
+            </span>
+            <lucide-icon
+              [name]="helpOpen() ? 'chevron-up' : 'chevron-down'"
+              class="size-4 text-ink-muted"
+            />
+          </button>
+
+          @if (helpOpen()) {
+            <div class="space-y-4 border-t border-edge px-4 py-4 text-sm">
+              <ul class="space-y-2">
+                <li class="flex gap-2">
+                  <lucide-icon name="repeat" class="mt-0.5 size-4 shrink-0 text-ink-muted" />
+                  <span>
+                    <span class="font-medium">Safe to re-run.</span> Topics are matched by question
+                    and patterns by title (case-insensitive) — existing ones are reused, never
+                    overwritten.
+                  </span>
+                </li>
+                <li class="flex gap-2">
+                  <lucide-icon name="tags" class="mt-0.5 size-4 shrink-0 text-ink-muted" />
+                  <span>
+                    <span class="font-medium">Labels are created on the fly.</span> Unknown label
+                    names are added automatically and their type is inferred.
+                  </span>
+                </li>
+                <li class="flex gap-2">
+                  <lucide-icon name="list-checks" class="mt-0.5 size-4 shrink-0 text-ink-muted" />
+                  <span>
+                    <span class="font-medium">Required fields:</span> each topic needs a
+                    <code class="rounded bg-surface px-1 py-0.5 text-xs">question</code>; each
+                    pattern needs a
+                    <code class="rounded bg-surface px-1 py-0.5 text-xs">title</code> and
+                    <code class="rounded bg-surface px-1 py-0.5 text-xs">code</code>. Everything
+                    else (<code class="rounded bg-surface px-1 py-0.5 text-xs">context</code>,
+                    <code class="rounded bg-surface px-1 py-0.5 text-xs">language</code>,
+                    <code class="rounded bg-surface px-1 py-0.5 text-xs">labels</code>) is optional.
+                  </span>
+                </li>
+              </ul>
+
+              <div>
+                <div class="mb-1.5 flex items-center justify-between">
+                  <span class="text-xs font-medium uppercase tracking-wide text-ink-muted">
+                    Example
+                  </span>
+                  <button
+                    type="button"
+                    class="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    (click)="useExample()"
+                    data-testid="import-dialog-use-example"
+                  >
+                    <lucide-icon name="clipboard-paste" class="size-3.5" />
+                    Use this example
+                  </button>
+                </div>
+                <pre
+                  class="max-h-56 overflow-auto rounded-lg border border-edge bg-surface p-3 font-mono text-[12px] leading-relaxed text-ink"
+                ><code>{{ example }}</code></pre>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Input -->
+        <label for="import-json" class="mt-5 mb-1.5 block text-sm font-medium">Your JSON</label>
+        <textarea
+          id="import-json"
+          name="raw"
+          [(ngModel)]="raw"
+          rows="10"
+          spellcheck="false"
+          placeholder='{ "topics": [ … ] }'
+          data-testid="import-dialog-input"
+          class="w-full resize-y rounded-lg border border-edge bg-background/50 px-3 py-2 font-mono text-[13px] outline-none placeholder:font-sans placeholder:text-ink-muted focus:border-primary/60"
+        ></textarea>
+
+        @if (error()) {
+          <p
+            class="mt-2 flex items-start gap-1.5 text-sm text-accent-pink"
+            data-testid="import-dialog-error"
+          >
+            <lucide-icon name="triangle-alert" class="mt-0.5 size-4 shrink-0" />
+            {{ error() }}
+          </p>
+        }
+      }
+    </div>
+
+    <!-- Footer -->
+    <footer class="flex justify-end gap-2 border-t border-edge p-4">
+      @if (result()) {
+        <button
+          type="button"
+          (click)="dismiss()"
+          class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90"
+        >
+          Done
+        </button>
+      } @else {
+        <button
+          type="button"
+          (click)="dismiss()"
+          class="rounded-lg border border-edge px-4 py-2 text-sm text-ink-muted hover:text-ink"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="submit()"
+          [disabled]="!raw.trim() || submitting()"
+          data-testid="import-dialog-submit"
+          class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50"
+        >
+          <lucide-icon name="upload" class="size-4" />
+          {{ submitting() ? 'Importing…' : 'Import' }}
+        </button>
+      }
+    </footer>
+  </div>
+</div>
