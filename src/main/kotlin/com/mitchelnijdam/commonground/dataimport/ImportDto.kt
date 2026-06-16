@@ -15,6 +15,8 @@ data class ImportTopic(
     @field:NotBlank
     val question: String,
     val context: String? = null,
+    @field:Size(max = 50)
+    val language: String? = null,
     val labels: List<String> = emptyList(),
     @field:Valid
     val patterns: List<ImportPattern> = emptyList(),
@@ -23,8 +25,6 @@ data class ImportTopic(
 data class ImportPattern(
     @field:NotBlank @field:Size(max = 200)
     val title: String,
-    @field:NotBlank @field:Size(max = 50)
-    val language: String,
     @field:NotBlank
     val code: String,
 )

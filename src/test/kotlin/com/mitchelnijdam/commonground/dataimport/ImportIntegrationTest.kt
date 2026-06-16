@@ -46,10 +46,11 @@ class ImportIntegrationTest : IntegrationTestBase() {
             {
               "question": "How should null values be handled in Kotlin?",
               "context": "Baseline context",
+              "language": "kotlin",
               "labels": ["Kotlin", "SomeNewStyle"],
               "patterns": [
-                { "title": "Return nullable type", "language": "kotlin", "code": "fun f(): User?" },
-                { "title": "Throw exception", "language": "kotlin", "code": "fun f(): User" }
+                { "title": "Return nullable type", "code": "fun f(): User?" },
+                { "title": "Throw exception", "code": "fun f(): User" }
               ]
             }
           ]
@@ -131,7 +132,7 @@ class ImportIntegrationTest : IntegrationTestBase() {
         import(
             """
             {"topics": [{"question": "EXISTING QUESTION?", "labels": [], "patterns": [
-              {"title": "A pattern", "language": "kotlin", "code": "x"}
+              {"title": "A pattern", "code": "x"}
             ]}]}
             """.trimIndent(),
         ).andExpect(status().isOk)

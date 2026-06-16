@@ -11,7 +11,7 @@ export class SuggestionsApi {
 
   submitPatternSuggestion(
     topicId: number,
-    suggestion: { title: string | null; code: string; language: string },
+    suggestion: { title: string | null; code: string },
   ): Observable<PatternSuggestion> {
     return this.http.post<PatternSuggestion>(
       `/api/topics/${topicId}/suggestions/patterns`,
@@ -26,7 +26,9 @@ export class SuggestionsApi {
   submitTopicSuggestion(suggestion: {
     question: string;
     context: string | null;
+    language: string | null;
     labelIds: number[];
+    patterns: { title: string | null; code: string }[];
   }): Observable<TopicSuggestion> {
     return this.http.post<TopicSuggestion>('/api/suggestions/topics', suggestion);
   }

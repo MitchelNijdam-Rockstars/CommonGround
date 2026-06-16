@@ -8,7 +8,7 @@ import { TopicRanking } from '../../core/models/ranking.model';
 import { Rankings } from './rankings';
 
 const section = (eloRating: number): TopicRanking => ({
-  topic: { id: 1, question: 'How to handle nulls?', context: null, labels: [] },
+  topic: { id: 1, question: 'How to handle nulls?', context: null, language: 'kotlin', labels: [] },
   totalVotes: 7,
   patterns: [
     {

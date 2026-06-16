@@ -3,7 +3,7 @@ export interface Pattern {
   topicId: number;
   title: string;
   code: string;
-  language: string;
+  language: string | null;
   eloRating: number;
   timesShown: number;
   timesChosen: number;

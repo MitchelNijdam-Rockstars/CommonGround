@@ -62,8 +62,8 @@ class UserExpertiseIntegrationTest : IntegrationTestBase() {
 
     private fun seedVotableTopic(question: String, label: Label): Topic {
         val topic = topicRepository.save(Topic(question = question, labels = mutableSetOf(label)))
-        patternRepository.save(Pattern(topic = topic, title = "$question A", code = "a", language = "kotlin"))
-        patternRepository.save(Pattern(topic = topic, title = "$question B", code = "b", language = "kotlin"))
+        patternRepository.save(Pattern(topic = topic, title = "$question A", code = "a"))
+        patternRepository.save(Pattern(topic = topic, title = "$question B", code = "b"))
         return topic
     }
 

@@ -15,5 +15,5 @@ class AdminTopicController(private val topicService: TopicService) {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@Valid @RequestBody request: CreateTopicRequest): TopicDto =
-        topicService.create(request.question, request.context, request.labelIds).toDto()
+        topicService.create(request.question, request.context, request.language, request.labelIds).toDto()
 }

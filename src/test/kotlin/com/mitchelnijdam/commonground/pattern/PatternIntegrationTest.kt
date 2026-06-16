@@ -47,7 +47,7 @@ class PatternIntegrationTest : IntegrationTestBase() {
         val response = mockMvc.perform(
             post("/api/admin/topics/$topicId/patterns")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"title": "$title", "code": "fun a() = 1", "language": "kotlin"}"""),
+                .content("""{"title": "$title", "code": "fun a() = 1"}"""),
         ).andExpect(status().isCreated).andReturn().response.contentAsString
         return Regex(""""id":(\d+)""").find(response)!!.groupValues[1].toLong()
     }
@@ -99,7 +99,7 @@ class PatternIntegrationTest : IntegrationTestBase() {
         mockMvc.perform(
             post("/api/admin/topics/99999/patterns")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"title": "T", "code": "c", "language": "kotlin"}"""),
+                .content("""{"title": "T", "code": "c"}"""),
         ).andExpect(status().isNotFound)
     }
 }

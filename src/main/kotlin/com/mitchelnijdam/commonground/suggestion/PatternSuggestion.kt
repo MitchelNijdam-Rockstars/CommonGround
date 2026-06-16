@@ -37,9 +37,6 @@ data class PatternSuggestion(
     @Column(nullable = false, columnDefinition = "text")
     val code: String,
 
-    @Column(nullable = false)
-    val language: String,
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     var status: SuggestionStatus = SuggestionStatus.PENDING,

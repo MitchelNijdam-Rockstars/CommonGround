@@ -22,19 +22,9 @@
   @if (code.trim()) {
     <div>
       <p class="mb-1 text-xs text-ink-muted">Preview</p>
-      <app-code-block [code]="code" [language]="language" />
+      <app-code-block [code]="code" [language]="language()" />
     </div>
   }
-
-  <input
-    type="text"
-    name="language"
-    [(ngModel)]="language"
-    maxlength="50"
-    required
-    placeholder="Language (e.g. kotlin, typescript)"
-    class="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
-  />
 
   @if (error()) {
     <p class="text-sm text-accent-pink">{{ error() }}</p>
@@ -43,7 +33,7 @@
   <div class="flex gap-2">
     <button
       type="submit"
-      [disabled]="saving() || !code.trim() || !language.trim()"
+      [disabled]="saving() || !code.trim()"
       class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-background hover:opacity-90 disabled:opacity-50"
     >
       {{ saving() ? 'Submitting…' : 'Submit suggestion' }}

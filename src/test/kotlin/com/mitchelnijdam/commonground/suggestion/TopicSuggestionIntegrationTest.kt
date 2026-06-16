@@ -4,6 +4,7 @@ import com.mitchelnijdam.commonground.IntegrationTestBase
 import com.mitchelnijdam.commonground.label.Label
 import com.mitchelnijdam.commonground.label.LabelRepository
 import com.mitchelnijdam.commonground.label.LabelType
+import com.mitchelnijdam.commonground.pattern.PatternRepository
 import com.mitchelnijdam.commonground.topic.TopicRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -35,6 +36,9 @@ class TopicSuggestionIntegrationTest : IntegrationTestBase() {
 
     @Autowired
     lateinit var labelRepository: LabelRepository
+
+    @Autowired
+    lateinit var patternRepository: PatternRepository
 
     private fun submit(question: String, labelIds: List<Long> = emptyList()): Long {
         val response = mockMvc.perform(
@@ -79,6 +83,46 @@ class TopicSuggestionIntegrationTest : IntegrationTestBase() {
         mockMvc.perform(get("/api/voting/matchups").param("count", "10"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.length()").value(0))
+    }
+
+    @Test
+    fun `a topic suggestion carries language, submitter and inline patterns through approval`() {
+        val response = mockMvc.perform(
+            post("/api/suggestions/topics")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "question": "How to model domain errors?",
+                      "language": "kotlin",
+                      "patterns": [
+                        {"title": "Sealed result", "code": "sealed interface Result"},
+                        {"code": "fun f(): User?"}
+                      ]
+                    }
+                    """.trimIndent(),
+                ),
+        ).andExpect(status().isCreated)
+            .andExpect(jsonPath("$.language").value("kotlin"))
+            .andExpect(jsonPath("$.submittedBy").value("admin"))
+            .andExpect(jsonPath("$.patterns.length()").value(2))
+            .andReturn().response.contentAsString
+        val id = Regex(""""id":(\d+)""").find(response)!!.groupValues[1].toLong()
+
+        mockMvc.perform(post("/api/admin/suggestions/topics/$id/approve"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.status").value("APPROVED"))
+
+        val topic = topicRepository.findAll().single { it.question == "How to model domain errors?" }
+        assertThat(topic.language).isEqualTo("kotlin")
+        val patterns = patternRepository.findByTopicIdAndActiveTrue(topic.id)
+        assertThat(patterns).hasSize(2)
+        assertThat(patterns.map { it.title }).anySatisfy { assertThat(it).isEqualTo("Sealed result") }
+        // the title-less candidate gets the community fallback
+        assertThat(patterns.map { it.title }).anySatisfy { assertThat(it).startsWith("Community suggestion #") }
+
+        // two patterns means the new topic is immediately matchup-eligible
+        assertThat(patternRepository.findTopicIdsWithAtLeastTwoActivePatterns()).contains(topic.id)
     }
 
     @Test

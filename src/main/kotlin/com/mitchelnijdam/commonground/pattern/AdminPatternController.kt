@@ -17,9 +17,9 @@ class AdminPatternController(private val patternService: PatternService) {
     @PostMapping("/topics/{topicId}/patterns")
     @ResponseStatus(HttpStatus.CREATED)
     fun create(@PathVariable topicId: Long, @Valid @RequestBody request: CreatePatternRequest): PatternDto =
-        patternService.create(topicId, request.title, request.code, request.language).toDto()
+        patternService.create(topicId, request.title, request.code)
 
     @PatchMapping("/patterns/{patternId}/deactivate")
     fun deactivate(@PathVariable patternId: Long): PatternDto =
-        patternService.deactivate(patternId).toDto()
+        patternService.deactivate(patternId)
 }

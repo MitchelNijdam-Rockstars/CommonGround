@@ -56,9 +56,9 @@ class RankingsIntegrationTest : IntegrationTestBase() {
     @Test
     fun `ELO ranking sorts patterns by elo rating descending`() {
         val topic = topicRepository.save(Topic(question = "How to handle nulls?"))
-        patternRepository.save(Pattern(topic = topic, title = "Low", code = "a", language = "kotlin", eloRating = 1400.0))
-        patternRepository.save(Pattern(topic = topic, title = "High", code = "b", language = "kotlin", eloRating = 1600.0))
-        patternRepository.save(Pattern(topic = topic, title = "Mid", code = "c", language = "kotlin", eloRating = 1500.0))
+        patternRepository.save(Pattern(topic = topic, title = "Low", code = "a", eloRating = 1400.0))
+        patternRepository.save(Pattern(topic = topic, title = "High", code = "b", eloRating = 1600.0))
+        patternRepository.save(Pattern(topic = topic, title = "Mid", code = "c", eloRating = 1500.0))
 
         val json = mockMvc.perform(get("/api/rankings").param("algorithm", "ELO"))
             .andExpect(status().isOk)
@@ -74,13 +74,13 @@ class RankingsIntegrationTest : IntegrationTestBase() {
     fun `WIN_RATE ranking sorts by win rate descending and ranks no-vote patterns last`() {
         val topic = topicRepository.save(Topic(question = "Win rate topic?"))
         patternRepository.save(
-            Pattern(topic = topic, title = "Best", code = "a", language = "kotlin", timesShown = 10, timesChosen = 9),
+            Pattern(topic = topic, title = "Best", code = "a", timesShown = 10, timesChosen = 9),
         )
         patternRepository.save(
-            Pattern(topic = topic, title = "Worst", code = "b", language = "kotlin", timesShown = 10, timesChosen = 1),
+            Pattern(topic = topic, title = "Worst", code = "b", timesShown = 10, timesChosen = 1),
         )
         patternRepository.save(
-            Pattern(topic = topic, title = "Unseen", code = "c", language = "kotlin", timesShown = 0, timesChosen = 0),
+            Pattern(topic = topic, title = "Unseen", code = "c", timesShown = 0, timesChosen = 0),
         )
 
         val json = mockMvc.perform(get("/api/rankings").param("algorithm", "WIN_RATE"))
@@ -101,8 +101,8 @@ class RankingsIntegrationTest : IntegrationTestBase() {
     @Test
     fun `default algorithm is ELO when no param given`() {
         val topic = topicRepository.save(Topic(question = "Default topic?"))
-        patternRepository.save(Pattern(topic = topic, title = "Low", code = "a", language = "kotlin", eloRating = 1400.0))
-        patternRepository.save(Pattern(topic = topic, title = "High", code = "b", language = "kotlin", eloRating = 1600.0))
+        patternRepository.save(Pattern(topic = topic, title = "Low", code = "a", eloRating = 1400.0))
+        patternRepository.save(Pattern(topic = topic, title = "High", code = "b", eloRating = 1600.0))
 
         val json = mockMvc.perform(get("/api/rankings"))
             .andExpect(status().isOk)
@@ -116,14 +116,14 @@ class RankingsIntegrationTest : IntegrationTestBase() {
     fun `each topic section reports total votes and only topics with active patterns appear`() {
         val voter = userRepository.save(User(email = "ranker@test.dev", role = UserRole.USER))
         val topic = topicRepository.save(Topic(question = "Vote count topic?"))
-        val a = patternRepository.save(Pattern(topic = topic, title = "A", code = "a", language = "kotlin"))
-        val b = patternRepository.save(Pattern(topic = topic, title = "B", code = "b", language = "kotlin"))
+        val a = patternRepository.save(Pattern(topic = topic, title = "A", code = "a"))
+        val b = patternRepository.save(Pattern(topic = topic, title = "B", code = "b"))
         voteRepository.save(Vote(topic = topic, winnerPattern = a, loserPattern = b, user = voter))
         voteRepository.save(Vote(topic = topic, winnerPattern = b, loserPattern = a, user = voter))
 
         // a topic with only an inactive pattern must be excluded
         val emptyTopic = topicRepository.save(Topic(question = "No active patterns?"))
-        patternRepository.save(Pattern(topic = emptyTopic, title = "Gone", code = "x", language = "kotlin", active = false))
+        patternRepository.save(Pattern(topic = emptyTopic, title = "Gone", code = "x", active = false))
 
         val json = mockMvc.perform(get("/api/rankings"))
             .andExpect(status().isOk)

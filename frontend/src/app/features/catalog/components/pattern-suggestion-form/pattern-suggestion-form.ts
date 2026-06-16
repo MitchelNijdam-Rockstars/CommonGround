@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SuggestionsApi } from '../../../../core/services/suggestions-api';
 import { CodeBlock } from '../../../../shared/components/code-block/code-block';
@@ -9,33 +9,28 @@ import { CodeBlock } from '../../../../shared/components/code-block/code-block';
   templateUrl: './pattern-suggestion-form.html',
   styleUrl: './pattern-suggestion-form.scss',
 })
-export class PatternSuggestionForm implements OnInit {
+export class PatternSuggestionForm {
   private readonly api = inject(SuggestionsApi);
 
   readonly topicId = input.required<number>();
-  readonly defaultLanguage = input<string>('');
+  /** The topic's language, used only to highlight the live preview. */
+  readonly language = input<string | null>(null);
   readonly submitted = output<void>();
   readonly cancelled = output<void>();
 
   protected title = '';
   protected code = '';
-  protected language = '';
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
 
-  ngOnInit(): void {
-    this.language = this.defaultLanguage();
-  }
-
   submit(): void {
-    if (!this.code.trim() || !this.language.trim() || this.saving()) return;
+    if (!this.code.trim() || this.saving()) return;
     this.saving.set(true);
     this.error.set(null);
     this.api
       .submitPatternSuggestion(this.topicId(), {
         title: this.title.trim() || null,
         code: this.code,
-        language: this.language.trim(),
       })
       .subscribe({
         next: () => {

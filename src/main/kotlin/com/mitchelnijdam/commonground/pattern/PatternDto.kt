@@ -9,7 +9,7 @@ data class PatternDto(
     val topicId: Long,
     val title: String,
     val code: String,
-    val language: String,
+    val language: String?,
     val eloRating: Double,
     val timesShown: Int,
     val timesChosen: Int,
@@ -28,7 +28,7 @@ data class PatternDetailDto(
     val topicId: Long,
     val title: String,
     val code: String,
-    val language: String,
+    val language: String?,
     val eloRating: Double,
     val winRate: Double?,
     val comments: List<PatternCommentDto>,
@@ -39,8 +39,6 @@ data class CreatePatternRequest(
     val title: String,
     @field:NotBlank
     val code: String,
-    @field:NotBlank @field:Size(max = 50)
-    val language: String,
 )
 
 fun Pattern.toDto(): PatternDto = PatternDto(
@@ -48,7 +46,7 @@ fun Pattern.toDto(): PatternDto = PatternDto(
     topicId = topic.id,
     title = title,
     code = code,
-    language = language,
+    language = topic.language,
     eloRating = eloRating,
     timesShown = timesShown,
     timesChosen = timesChosen,

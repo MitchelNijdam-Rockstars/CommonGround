@@ -58,9 +58,9 @@ class PatternDetailIntegrationTest : IntegrationTestBase() {
 
     @BeforeEach
     fun seed() {
-        topic = topicRepository.save(Topic(question = "How to handle nulls?"))
-        winner = patternRepository.save(Pattern(topic = topic, title = "Nullable", code = "fun a() = 1", language = "kotlin"))
-        loser = patternRepository.save(Pattern(topic = topic, title = "Exception", code = "fun b() = 2", language = "kotlin"))
+        topic = topicRepository.save(Topic(question = "How to handle nulls?", language = "kotlin"))
+        winner = patternRepository.save(Pattern(topic = topic, title = "Nullable", code = "fun a() = 1"))
+        loser = patternRepository.save(Pattern(topic = topic, title = "Exception", code = "fun b() = 2"))
         voter = userRepository.save(User(email = "voter@test.dev", role = UserRole.USER))
     }
 

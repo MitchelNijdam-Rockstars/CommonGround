@@ -113,7 +113,7 @@
               @if (patternFormTopicId() === topic.id) {
                 <app-pattern-suggestion-form
                   [topicId]="topic.id"
-                  [defaultLanguage]="defaultLanguageFor(topic)"
+                  [language]="topic.language"
                   (submitted)="onPatternSuggestionSubmitted()"
                   (cancelled)="patternFormTopicId.set(null)"
                 />

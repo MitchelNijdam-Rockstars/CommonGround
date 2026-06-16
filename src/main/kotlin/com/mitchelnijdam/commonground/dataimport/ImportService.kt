@@ -39,6 +39,7 @@ class ImportService(
                     Topic(
                         question = importTopic.question.trim(),
                         context = importTopic.context?.ifBlank { null },
+                        language = importTopic.language?.trim()?.ifBlank { null },
                         labels = labels,
                     ),
                 )
@@ -56,7 +57,6 @@ class ImportService(
                         topic = topic,
                         title = importPattern.title.trim(),
                         code = importPattern.code,
-                        language = importPattern.language.trim(),
                     ),
                 )
                 patternsCreated++

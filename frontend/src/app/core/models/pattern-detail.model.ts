@@ -8,7 +8,7 @@ export interface PatternDetail {
   topicId: number;
   title: string;
   code: string;
-  language: string;
+  language: string | null;
   eloRating: number;
   winRate: number | null;
   comments: PatternComment[];

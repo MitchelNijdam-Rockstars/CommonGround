@@ -38,7 +38,7 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
     fun `export streams a markdown attachment with a dated filename`() {
         val topic = topicRepository.save(Topic(question = "How to handle nulls?"))
         patternRepository.save(
-            Pattern(topic = topic, title = "Winner", code = "val x = 1", language = "kotlin", eloRating = 1600.0, timesShown = 5),
+            Pattern(topic = topic, title = "Winner", code = "val x = 1", eloRating = 1600.0, timesShown = 5),
         )
 
         val response = mockMvc.perform(get("/api/rankings/export"))
@@ -55,12 +55,12 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `export contains the question, winning pattern title and fenced code block`() {
-        val topic = topicRepository.save(Topic(question = "How to handle nulls?"))
+        val topic = topicRepository.save(Topic(question = "How to handle nulls?", language = "kotlin"))
         patternRepository.save(
-            Pattern(topic = topic, title = "Low elo", code = "loser code", language = "kotlin", eloRating = 1400.0, timesShown = 3),
+            Pattern(topic = topic, title = "Low elo", code = "loser code", eloRating = 1400.0, timesShown = 3),
         )
         patternRepository.save(
-            Pattern(topic = topic, title = "High elo", code = "val winner = true", language = "kotlin", eloRating = 1700.0, timesShown = 4),
+            Pattern(topic = topic, title = "High elo", code = "val winner = true", eloRating = 1700.0, timesShown = 4),
         )
 
         val body = mockMvc.perform(get("/api/rankings/export"))
@@ -76,12 +76,12 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
     fun `topics without any voted pattern are excluded`() {
         val voted = topicRepository.save(Topic(question = "Voted topic?"))
         patternRepository.save(
-            Pattern(topic = voted, title = "Seen", code = "a", language = "kotlin", timesShown = 2),
+            Pattern(topic = voted, title = "Seen", code = "a", timesShown = 2),
         )
 
         val unvoted = topicRepository.save(Topic(question = "Unvoted topic?"))
         patternRepository.save(
-            Pattern(topic = unvoted, title = "Never shown", code = "b", language = "kotlin", timesShown = 0),
+            Pattern(topic = unvoted, title = "Never shown", code = "b", timesShown = 0),
         )
 
         val body = mockMvc.perform(get("/api/rankings/export"))
@@ -95,9 +95,9 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
     @Test
     fun `topics are ordered by id and output is deterministic`() {
         val first = topicRepository.save(Topic(question = "First question?"))
-        patternRepository.save(Pattern(topic = first, title = "P1", code = "1", language = "kotlin", timesShown = 1))
+        patternRepository.save(Pattern(topic = first, title = "P1", code = "1", timesShown = 1))
         val second = topicRepository.save(Topic(question = "Second question?"))
-        patternRepository.save(Pattern(topic = second, title = "P2", code = "2", language = "kotlin", timesShown = 1))
+        patternRepository.save(Pattern(topic = second, title = "P2", code = "2", timesShown = 1))
 
         val body1 = mockMvc.perform(get("/api/rankings/export")).andReturn().response.contentAsString
         val body2 = mockMvc.perform(get("/api/rankings/export")).andReturn().response.contentAsString

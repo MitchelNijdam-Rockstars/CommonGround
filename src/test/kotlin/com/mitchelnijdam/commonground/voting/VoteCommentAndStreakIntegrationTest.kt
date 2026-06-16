@@ -50,8 +50,8 @@ class VoteCommentAndStreakIntegrationTest : IntegrationTestBase() {
     @BeforeEach
     fun seedTopic() {
         val topic = topicRepository.save(Topic(question = "Comments and streaks?"))
-        patternA = patternRepository.save(Pattern(topic = topic, title = "A", code = "a", language = "kotlin"))
-        patternB = patternRepository.save(Pattern(topic = topic, title = "B", code = "b", language = "kotlin"))
+        patternA = patternRepository.save(Pattern(topic = topic, title = "A", code = "a"))
+        patternB = patternRepository.save(Pattern(topic = topic, title = "B", code = "b"))
     }
 
     private fun vote(comment: String? = null) = mockMvc.perform(

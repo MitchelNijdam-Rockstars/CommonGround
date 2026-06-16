@@ -18,7 +18,7 @@ class PatternSuggestionService(
 ) {
 
     @Transactional
-    fun submit(user: User, topicId: Long, title: String?, code: String, language: String): PatternSuggestionDto {
+    fun submit(user: User, topicId: Long, title: String?, code: String): PatternSuggestionDto {
         val topic = topicRepository.findById(topicId)
             .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Topic $topicId not found") }
         return patternSuggestionRepository.save(
@@ -27,7 +27,6 @@ class PatternSuggestionService(
                 user = user,
                 title = title?.ifBlank { null },
                 code = code,
-                language = language,
             ),
         ).toDto()
     }
@@ -52,7 +51,6 @@ class PatternSuggestionService(
                 topic = suggestion.topic,
                 title = suggestion.title ?: "Community suggestion #${suggestion.id}",
                 code = suggestion.code,
-                language = suggestion.language,
             ),
         )
         suggestion.status = SuggestionStatus.APPROVED

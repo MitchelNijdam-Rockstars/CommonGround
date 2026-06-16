@@ -8,7 +8,7 @@ import { Matchup } from '../../core/models/matchup.model';
 import { Voting } from './voting';
 
 const matchup = (id: number, patternAId: number, patternBId: number): Matchup => ({
-  topic: { id, question: `Question ${id}?`, context: null, labels: [] },
+  topic: { id, question: `Question ${id}?`, context: null, language: 'kotlin', labels: [] },
   patternA: {
     id: patternAId,
     topicId: id,

@@ -30,16 +30,16 @@ class MarkdownExportService(
                 val winner = patterns.sortedWith(
                     compareByDescending<Pattern> { it.eloRating }.thenBy { it.id },
                 ).first()
-                section(topic.question, winner)
+                section(topic.question, topic.language, winner)
             }
 
         return sections.joinToString("\n\n", postfix = "\n")
     }
 
-    private fun section(question: String, winner: Pattern): String = buildString {
+    private fun section(question: String, language: String?, winner: Pattern): String = buildString {
         append("## ").append(question).append("\n\n")
         append("### ").append(winner.title).append("\n\n")
-        append("```").append(winner.language).append("\n")
+        append("```").append(language.orEmpty()).append("\n")
         append(winner.code.trimEnd('\n')).append("\n")
         append("```")
     }

@@ -11,7 +11,7 @@ class PatternController(private val patternService: PatternService) {
 
     @GetMapping
     fun listActive(@PathVariable topicId: Long): List<PatternDto> =
-        patternService.activePatternsForTopic(topicId).map { it.toDto() }
+        patternService.activePatternsForTopic(topicId)
 }
 
 @RestController

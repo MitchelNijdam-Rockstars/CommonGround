@@ -51,7 +51,7 @@ class PatternSuggestionIntegrationTest : IntegrationTestBase() {
         val response = mockMvc.perform(
             post("/api/topics/$topicId/suggestions/patterns")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{$titleJson "code": "class A(private val b: B)", "language": "kotlin"}"""),
+                .content("""{$titleJson "code": "class A(private val b: B)"}"""),
         ).andExpect(status().isCreated)
             .andExpect(jsonPath("$.status").value("PENDING"))
             .andReturn().response.contentAsString

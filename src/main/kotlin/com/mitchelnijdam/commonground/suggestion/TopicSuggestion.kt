@@ -3,6 +3,7 @@ package com.mitchelnijdam.commonground.suggestion
 import com.mitchelnijdam.commonground.label.Label
 import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.user.User
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -15,6 +16,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.JoinTable
 import jakarta.persistence.ManyToMany
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import java.time.Instant
@@ -36,6 +38,9 @@ data class TopicSuggestion(
     @Column(columnDefinition = "text")
     val context: String? = null,
 
+    @Column(length = 50)
+    val language: String? = null,
+
     @ManyToMany
     @JoinTable(
         name = "topic_suggestion_label",
@@ -43,6 +48,10 @@ data class TopicSuggestion(
         inverseJoinColumns = [JoinColumn(name = "label_id")],
     )
     val labels: MutableSet<Label> = mutableSetOf(),
+
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "topic_suggestion_id")
+    val patterns: MutableList<TopicSuggestionPattern> = mutableListOf(),
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

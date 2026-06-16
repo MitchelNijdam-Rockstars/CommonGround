@@ -20,14 +20,19 @@ class TopicService(
             .sortedBy { it.question.lowercase() }
 
     @Transactional
-    fun create(question: String, context: String?, labelIds: List<Long>): Topic {
+    fun create(question: String, context: String?, language: String?, labelIds: List<Long>): Topic {
         val labels = labelRepository.findAllById(labelIds)
         val missing = labelIds.toSet() - labels.map { it.id }.toSet()
         if (missing.isNotEmpty()) {
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown label ids: $missing")
         }
         return topicRepository.save(
-            Topic(question = question, context = context?.ifBlank { null }, labels = labels.toMutableSet()),
+            Topic(
+                question = question,
+                context = context?.ifBlank { null },
+                language = language?.ifBlank { null },
+                labels = labels.toMutableSet(),
+            ),
         )
     }
 }

@@ -12,7 +12,7 @@ export class CodeBlock {
   private readonly sanitizer = inject(DomSanitizer);
 
   readonly code = input.required<string>();
-  readonly language = input<string>();
+  readonly language = input<string | null>();
 
   protected readonly highlighted = computed<SafeHtml>(() => {
     const language = this.language()?.toLowerCase();

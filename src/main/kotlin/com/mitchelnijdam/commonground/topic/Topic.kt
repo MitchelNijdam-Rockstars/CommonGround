@@ -25,6 +25,9 @@ data class Topic(
     @Column(columnDefinition = "text")
     val context: String? = null,
 
+    @Column(length = 50)
+    val language: String? = null,
+
     @ManyToMany
     @JoinTable(
         name = "topic_label",

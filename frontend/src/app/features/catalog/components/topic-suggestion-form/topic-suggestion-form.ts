@@ -1,12 +1,19 @@
 import { Component, OnInit, inject, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 import { Label } from '../../../../core/models/label.model';
 import { CatalogApi } from '../../../../core/services/catalog-api';
 import { SuggestionsApi } from '../../../../core/services/suggestions-api';
+import { CodeBlock } from '../../../../shared/components/code-block/code-block';
+
+interface PatternRow {
+  title: string;
+  code: string;
+}
 
 @Component({
   selector: 'app-topic-suggestion-form',
-  imports: [FormsModule],
+  imports: [FormsModule, LucideAngularModule, CodeBlock],
   templateUrl: './topic-suggestion-form.html',
   styleUrl: './topic-suggestion-form.scss',
 })
@@ -19,8 +26,10 @@ export class TopicSuggestionForm implements OnInit {
 
   protected question = '';
   protected context = '';
+  protected language = '';
   protected readonly labels = signal<Label[]>([]);
   protected readonly selectedLabelIds = signal<Set<number>>(new Set());
+  protected readonly patterns = signal<PatternRow[]>([{ title: '', code: '' }]);
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -40,15 +49,28 @@ export class TopicSuggestionForm implements OnInit {
     });
   }
 
+  addPattern(): void {
+    this.patterns.update((rows) => [...rows, { title: '', code: '' }]);
+  }
+
+  removePattern(index: number): void {
+    this.patterns.update((rows) => rows.filter((_, i) => i !== index));
+  }
+
   submit(): void {
     if (!this.question.trim() || this.saving()) return;
     this.saving.set(true);
     this.error.set(null);
+    const patterns = this.patterns()
+      .filter((row) => row.code.trim())
+      .map((row) => ({ title: row.title.trim() || null, code: row.code }));
     this.api
       .submitTopicSuggestion({
         question: this.question.trim(),
         context: this.context.trim() || null,
+        language: this.language.trim() || null,
         labelIds: [...this.selectedLabelIds()],
+        patterns,
       })
       .subscribe({
         next: () => {

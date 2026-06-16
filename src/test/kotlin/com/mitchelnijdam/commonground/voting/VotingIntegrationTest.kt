@@ -61,8 +61,8 @@ class VotingIntegrationTest : IntegrationTestBase() {
     @BeforeEach
     fun seedTopicWithTwoPatterns() {
         topic = topicRepository.save(Topic(question = "How to handle nulls?"))
-        patternA = patternRepository.save(Pattern(topic = topic, title = "Nullable", code = "a", language = "kotlin"))
-        patternB = patternRepository.save(Pattern(topic = topic, title = "Exception", code = "b", language = "kotlin"))
+        patternA = patternRepository.save(Pattern(topic = topic, title = "Nullable", code = "a"))
+        patternB = patternRepository.save(Pattern(topic = topic, title = "Exception", code = "b"))
     }
 
     @Test
@@ -119,8 +119,8 @@ class VotingIntegrationTest : IntegrationTestBase() {
     fun `a batch never repeats a topic or a pattern pair`() {
         // a second eligible topic
         val topic2 = topicRepository.save(Topic(question = "Constructor or builder?"))
-        patternRepository.save(Pattern(topic = topic2, title = "Constructor", code = "c", language = "kotlin"))
-        patternRepository.save(Pattern(topic = topic2, title = "Builder", code = "d", language = "kotlin"))
+        patternRepository.save(Pattern(topic = topic2, title = "Constructor", code = "c"))
+        patternRepository.save(Pattern(topic = topic2, title = "Builder", code = "d"))
 
         val json = mockMvc.perform(get("/api/voting/matchups").param("count", "10"))
             .andExpect(status().isOk)
@@ -143,7 +143,7 @@ class VotingIntegrationTest : IntegrationTestBase() {
     @Test
     fun `topics with fewer than two active patterns are not served`() {
         val sparseTopic = topicRepository.save(Topic(question = "Only one option?"))
-        patternRepository.save(Pattern(topic = sparseTopic, title = "Lonely", code = "x", language = "kotlin"))
+        patternRepository.save(Pattern(topic = sparseTopic, title = "Lonely", code = "x"))
 
         val json = mockMvc.perform(get("/api/voting/matchups").param("count", "10"))
             .andExpect(status().isOk)
@@ -156,7 +156,7 @@ class VotingIntegrationTest : IntegrationTestBase() {
     @Test
     fun `voting on patterns of different topics is rejected`() {
         val otherTopic = topicRepository.save(Topic(question = "Another topic?"))
-        val foreign = patternRepository.save(Pattern(topic = otherTopic, title = "F", code = "f", language = "kotlin"))
+        val foreign = patternRepository.save(Pattern(topic = otherTopic, title = "F", code = "f"))
 
         mockMvc.perform(
             post("/api/voting/vote")
@@ -176,8 +176,8 @@ class VotingIntegrationTest : IntegrationTestBase() {
 
         // add an unseen topic
         val topic2 = topicRepository.save(Topic(question = "Fresh topic?"))
-        val p3 = patternRepository.save(Pattern(topic = topic2, title = "P3", code = "c", language = "kotlin"))
-        val p4 = patternRepository.save(Pattern(topic = topic2, title = "P4", code = "d", language = "kotlin"))
+        val p3 = patternRepository.save(Pattern(topic = topic2, title = "P3", code = "c"))
+        val p4 = patternRepository.save(Pattern(topic = topic2, title = "P4", code = "d"))
 
         val json = mockMvc.perform(get("/api/voting/matchups").param("count", "1"))
             .andExpect(status().isOk)

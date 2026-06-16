@@ -22,6 +22,15 @@
     class="w-full resize-y rounded-lg border border-edge bg-background/50 px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
   ></textarea>
 
+  <input
+    type="text"
+    name="language"
+    [(ngModel)]="language"
+    maxlength="50"
+    placeholder="Language for all patterns, e.g. kotlin, typescript (optional)"
+    class="w-full rounded-lg border border-edge bg-background/50 px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+  />
+
   @if (labels().length > 0) {
     <div>
       <p class="mb-1.5 text-xs text-ink-muted">Labels</p>
@@ -42,6 +51,54 @@
       </div>
     </div>
   }
+
+  <div class="space-y-3">
+    <p class="text-xs text-ink-muted">
+      Patterns — the competing options voters choose between (optional, add them now or later)
+    </p>
+    @for (row of patterns(); track $index) {
+      <div class="space-y-2 rounded-xl border border-edge bg-background/50 p-3">
+        <div class="flex items-center gap-2">
+          <input
+            type="text"
+            [name]="'pattern-title-' + $index"
+            [(ngModel)]="row.title"
+            maxlength="200"
+            placeholder="Title (optional)"
+            class="w-full rounded-lg border border-edge bg-surface px-3 py-2 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
+          />
+          @if (patterns().length > 1) {
+            <button
+              type="button"
+              (click)="removePattern($index)"
+              aria-label="Remove pattern"
+              class="shrink-0 rounded-lg border border-edge p-2 text-ink-muted hover:border-accent-pink/50 hover:text-accent-pink"
+            >
+              <lucide-icon name="x" class="size-4" />
+            </button>
+          }
+        </div>
+        <textarea
+          [name]="'pattern-code-' + $index"
+          [(ngModel)]="row.code"
+          rows="5"
+          placeholder="Your code…"
+          class="w-full resize-y rounded-lg border border-edge bg-surface px-3 py-2 font-mono text-[13px] outline-none placeholder:font-sans placeholder:text-ink-muted focus:border-primary/60"
+        ></textarea>
+        @if (row.code.trim()) {
+          <app-code-block [code]="row.code" [language]="language" />
+        }
+      </div>
+    }
+    <button
+      type="button"
+      (click)="addPattern()"
+      class="flex items-center gap-2 rounded-lg border border-dashed border-edge px-3 py-1.5 text-sm text-ink-muted hover:border-primary/50 hover:text-ink"
+    >
+      <lucide-icon name="plus" class="size-4" />
+      Add another pattern
+    </button>
+  </div>
 
   @if (error()) {
     <p class="text-sm text-accent-pink">{{ error() }}</p>

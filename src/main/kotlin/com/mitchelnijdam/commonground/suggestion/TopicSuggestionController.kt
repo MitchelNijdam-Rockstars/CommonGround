@@ -19,7 +19,14 @@ class TopicSuggestionController(private val topicSuggestionService: TopicSuggest
         @CurrentUser user: User,
         @Valid @RequestBody request: CreateTopicSuggestionRequest,
     ): TopicSuggestionDto =
-        topicSuggestionService.submit(user, request.question, request.context, request.labelIds)
+        topicSuggestionService.submit(
+            user,
+            request.question,
+            request.context,
+            request.language,
+            request.labelIds,
+            request.patterns,
+        )
 
     @GetMapping("/api/users/me/suggestions/topics")
     fun mySuggestions(@CurrentUser user: User): List<TopicSuggestionDto> =

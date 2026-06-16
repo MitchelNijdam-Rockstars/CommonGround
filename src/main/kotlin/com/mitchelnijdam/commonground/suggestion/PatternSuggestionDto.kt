@@ -10,7 +10,8 @@ data class PatternSuggestionDto(
     val topicQuestion: String,
     val title: String?,
     val code: String,
-    val language: String,
+    val language: String?,
+    val submittedBy: String,
     val status: SuggestionStatus,
     val rejectionReason: String?,
     val createdAt: Instant,
@@ -21,8 +22,6 @@ data class CreatePatternSuggestionRequest(
     val title: String? = null,
     @field:NotBlank
     val code: String,
-    @field:NotBlank @field:Size(max = 50)
-    val language: String,
 )
 
 data class RejectSuggestionRequest(
@@ -36,7 +35,8 @@ fun PatternSuggestion.toDto(): PatternSuggestionDto = PatternSuggestionDto(
     topicQuestion = topic.question,
     title = title,
     code = code,
-    language = language,
+    language = topic.language,
+    submittedBy = user.email.substringBefore("@"),
     status = status,
     rejectionReason = rejectionReason,
     createdAt = createdAt,

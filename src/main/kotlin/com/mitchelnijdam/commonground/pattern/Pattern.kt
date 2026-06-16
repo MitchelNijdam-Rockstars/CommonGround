@@ -31,9 +31,6 @@ data class Pattern(
     @Column(nullable = false, columnDefinition = "text")
     val code: String,
 
-    @Column(nullable = false)
-    val language: String,
-
     @Column(name = "elo_rating", nullable = false)
     var eloRating: Double = INITIAL_ELO_RATING,
 

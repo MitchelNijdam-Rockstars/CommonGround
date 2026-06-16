@@ -1,6 +1,8 @@
 package com.mitchelnijdam.commonground.suggestion
 
 import com.mitchelnijdam.commonground.label.LabelRepository
+import com.mitchelnijdam.commonground.pattern.Pattern
+import com.mitchelnijdam.commonground.pattern.PatternRepository
 import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.topic.TopicRepository
 import com.mitchelnijdam.commonground.user.User
@@ -14,11 +16,19 @@ import java.time.Instant
 class TopicSuggestionService(
     private val topicSuggestionRepository: TopicSuggestionRepository,
     private val topicRepository: TopicRepository,
+    private val patternRepository: PatternRepository,
     private val labelRepository: LabelRepository,
 ) {
 
     @Transactional
-    fun submit(user: User, question: String, context: String?, labelIds: List<Long>): TopicSuggestionDto {
+    fun submit(
+        user: User,
+        question: String,
+        context: String?,
+        language: String?,
+        labelIds: List<Long>,
+        patterns: List<CreateTopicSuggestionPatternRequest>,
+    ): TopicSuggestionDto {
         val labels = labelRepository.findAllById(labelIds.distinct())
         val missing = labelIds.toSet() - labels.map { it.id }.toSet()
         if (missing.isNotEmpty()) {
@@ -29,7 +39,11 @@ class TopicSuggestionService(
                 user = user,
                 question = question,
                 context = context?.ifBlank { null },
+                language = language?.ifBlank { null },
                 labels = labels.toMutableSet(),
+                patterns = patterns.map {
+                    TopicSuggestionPattern(title = it.title?.ifBlank { null }, code = it.code)
+                }.toMutableList(),
             ),
         ).toDto()
     }
@@ -43,8 +57,10 @@ class TopicSuggestionService(
         topicSuggestionRepository.findByStatusOrderByCreatedAtAsc(status).map { it.toDto() }
 
     /**
-     * Approval creates a new Topic carrying the suggested Labels. The Topic starts without
-     * Patterns, so it shows in the Catalog but stays out of matchups until Patterns are added.
+     * Approval creates a new Topic carrying the suggested Labels and language, plus a real Pattern
+     * for each candidate Pattern submitted with the suggestion — the whole suggestion is approved
+     * as one unit. A Topic with fewer than two Patterns shows in the Catalog but stays out of
+     * matchups until more Patterns are added.
      */
     @Transactional
     fun approve(suggestionId: Long): TopicSuggestionDto {
@@ -53,9 +69,19 @@ class TopicSuggestionService(
             Topic(
                 question = suggestion.question,
                 context = suggestion.context,
+                language = suggestion.language,
                 labels = suggestion.labels.toMutableSet(),
             ),
         )
+        suggestion.patterns.forEach { candidate ->
+            patternRepository.save(
+                Pattern(
+                    topic = topic,
+                    title = candidate.title ?: "Community suggestion #${candidate.id}",
+                    code = candidate.code,
+                ),
+            )
+        }
         suggestion.status = SuggestionStatus.APPROVED
         suggestion.createdTopic = topic
         suggestion.reviewedAt = Instant.now()

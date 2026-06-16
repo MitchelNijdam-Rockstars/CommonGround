@@ -7,11 +7,11 @@ A voting platform that democratizes coding standards. Developers vote on competi
 ### Core voting concepts
 
 **Topic**:
-A subject area representing a coding standard decision to be made (e.g., "Null handling in Kotlin"). A Topic groups N Patterns and carries a question, optional baseline context, and Labels.
+A subject area representing a coding standard decision to be made (e.g., "Null handling in Kotlin"). A Topic groups N Patterns and carries a question, optional baseline context, an optional language (shared by all its Patterns, used for code-fence highlighting and export), and Labels.
 _Avoid_: Dilemma, Question, Subject
 
 **Pattern**:
-A single competing coding style option that belongs to a Topic. Patterns are what get ranked; the winning Pattern of a Topic is the highest-ranked one.
+A single competing coding style option that belongs to a Topic. Patterns are what get ranked; the winning Pattern of a Topic is the highest-ranked one. A Pattern carries code and a title but no language of its own — the language lives on its Topic.
 _Avoid_: Option, Approach, Variant, Style, Alternative
 
 **Label**:
@@ -43,8 +43,12 @@ A candidate Pattern submitted by a User for an existing Topic. Moves through sta
 _Avoid_: Suggestion (alone — too ambiguous), OptionSuggestion
 
 **TopicSuggestion**:
-A candidate Topic submitted by a User when a whole subject area is missing from the dataset. Moves through the same states as PatternSuggestion. Approval creates a new Topic.
+A candidate Topic submitted by a User when a whole subject area is missing from the dataset. Moves through the same states as PatternSuggestion. It may carry candidate Patterns (see TopicSuggestionPattern) submitted in the same step. Approval creates a new Topic as one unit: the Topic plus a real Pattern for each candidate Pattern.
 _Avoid_: Suggestion (alone — too ambiguous)
+
+**TopicSuggestionPattern**:
+A candidate Pattern submitted together with a TopicSuggestion, before the Topic exists. It has no language of its own (that lives on the suggestion/Topic) and becomes a real Pattern when the TopicSuggestion is approved.
+_Avoid_: Suggestion (alone — too ambiguous); PatternSuggestion (that is a candidate for an *existing* Topic)
 
 ### Users
 
@@ -60,7 +64,7 @@ _Avoid_: Voter, Developer, Participant
 >
 > **Dev**: "What if there's no Topic for it yet?"
 >
-> **Domain expert**: "Then you submit a TopicSuggestion. Once approved, an Admin creates the Topic and you can suggest Patterns for it."
+> **Domain expert**: "Then you submit a TopicSuggestion — and you can attach your candidate Patterns to it right away. When an Admin approves it, the Topic and all those Patterns are created together in one step."
 >
 > **Dev**: "And when I vote, what exactly am I doing?"
 >

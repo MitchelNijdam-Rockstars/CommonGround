@@ -82,11 +82,6 @@ export class Catalog implements OnInit {
     return this.patternsByTopic().get(topicId) ?? [];
   }
 
-  /** Best guess for the suggestion form's language: the topic's first LANGUAGE label. */
-  defaultLanguageFor(topic: Topic): string {
-    return topic.labels.find((l) => l.labelType === 'LANGUAGE')?.name.toLowerCase() ?? '';
-  }
-
   onPatternSuggestionSubmitted(): void {
     this.patternFormTopicId.set(null);
     this.mySuggestions()?.reload();

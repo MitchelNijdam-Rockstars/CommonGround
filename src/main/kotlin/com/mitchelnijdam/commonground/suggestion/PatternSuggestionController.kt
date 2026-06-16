@@ -21,7 +21,7 @@ class PatternSuggestionController(private val patternSuggestionService: PatternS
         @PathVariable topicId: Long,
         @Valid @RequestBody request: CreatePatternSuggestionRequest,
     ): PatternSuggestionDto =
-        patternSuggestionService.submit(user, topicId, request.title, request.code, request.language)
+        patternSuggestionService.submit(user, topicId, request.title, request.code)
 
     @GetMapping("/api/users/me/suggestions/patterns")
     fun mySuggestions(@CurrentUser user: User): List<PatternSuggestionDto> =
