@@ -60,7 +60,7 @@ The Angular frontend is built by Gradle (via the Node plugin) and copied into `b
 ## Project structure
 
 The root project is Spring Boot app, using `build.gradle.kts`. The backends source code can be found in
-`src/main/kotlin/com/mitchelnijdam/home`.
+`src/main/kotlin/com/mitchelnijdam/commonground`.
 In the root of the project, the Angular frontend is placed inside the `frontend` folder.
 
 
@@ -70,8 +70,8 @@ commonground/                         # root
 ├── build.gradle.kts                  # Gradle build: backend + Angular frontend
 │
 ├── src/main/
-│   ├── kotlin/com/mitchelnijdam/home/
-│   │   └── HomeApplication.kt        # Spring Boot entry point
+│   ├── kotlin/com/mitchelnijdam/commonground/
+│   │   └── Application.kt        # Spring Boot entry point
 │   └── resources/
 │       ├── application.yaml          # base config (flyway schema, JPA dialect)
 │       ├── application-local.yaml    # local profile (DB url/credentials, port)
