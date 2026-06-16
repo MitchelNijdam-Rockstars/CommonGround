@@ -5,35 +5,22 @@ import { importProvidersFrom } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { LucideAngularModule, icons } from 'lucide-angular';
 import { Matchup } from '../../core/models/matchup.model';
-import { Pattern } from '../../core/models/pattern.model';
 import { Voting } from './voting';
 
-const matchup = (id: number, patternAId: number, patternBId: number): Matchup => ({
+const matchup = (id: number, patternIds: number[]): Matchup => ({
   topic: { id, question: `Question ${id}?`, context: null, language: 'kotlin', labels: [] },
-  patternA: {
-    id: patternAId,
+  patterns: patternIds.map((patternId) => ({
+    id: patternId,
     topicId: id,
-    title: `Pattern ${patternAId}`,
-    code: 'fun a() = 1',
+    title: `Pattern ${patternId}`,
+    code: `fun p${patternId}() = ${patternId}`,
     language: 'kotlin',
     eloRating: 1500,
     timesShown: 0,
     timesChosen: 0,
     winRate: null,
     active: true,
-  },
-  patternB: {
-    id: patternBId,
-    topicId: id,
-    title: `Pattern ${patternBId}`,
-    code: 'fun b() = 2',
-    language: 'kotlin',
-    eloRating: 1500,
-    timesShown: 0,
-    timesChosen: 0,
-    winRate: null,
-    active: true,
-  },
+  })),
   topicVoteCount: 5,
 });
 
