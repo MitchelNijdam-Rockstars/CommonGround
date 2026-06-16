@@ -20,4 +20,7 @@ interface VoteRepository : JpaRepository<Vote, Long> {
     /** Topic ids this user has already voted on (one preference per topic hides it afterwards). */
     @Query("select distinct v.topic.id from Vote v where v.user.id = :userId")
     fun findVotedTopicIdsByUserId(userId: Long): Set<Long>
+
+    /** Entity-based delete so vote_beaten_pattern join rows are removed too. Dev/testing only. */
+    fun deleteByUserId(userId: Long): Long
 }
