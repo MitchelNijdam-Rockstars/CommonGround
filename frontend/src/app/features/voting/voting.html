@@ -26,10 +26,7 @@
           </span>
           <span class="flex items-center gap-4">
             @if (streak() > 1) {
-              <span
-                class="flex items-center gap-1 font-semibold text-streak"
-                data-testid="streak"
-              >
+              <span class="flex items-center gap-1 font-semibold text-streak" data-testid="streak">
                 <lucide-icon name="flame" class="size-4" />
                 {{ streak() }} day streak
               </span>
@@ -55,32 +52,34 @@
           }
         </header>
 
-        <div class="grid gap-4 md:grid-cols-2">
-          <button
-            type="button"
-            data-testid="pattern-a"
-            (click)="vote(matchup.patternA.id, matchup.patternB.id)"
-            [disabled]="submitting()"
-            class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
-          >
-            <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
-              {{ matchup.patternA.title }}
-            </h2>
-            <app-code-block [code]="matchup.patternA.code" [language]="matchup.patternA.language" />
-          </button>
-
-          <button
-            type="button"
-            data-testid="pattern-b"
-            (click)="vote(matchup.patternB.id, matchup.patternA.id)"
-            [disabled]="submitting()"
-            class="group min-w-0 rounded-2xl border border-edge bg-surface p-5 text-left transition-colors hover:border-primary/70 disabled:opacity-60"
-          >
-            <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
-              {{ matchup.patternB.title }}
-            </h2>
-            <app-code-block [code]="matchup.patternB.code" [language]="matchup.patternB.language" />
-          </button>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          @for (pattern of matchup.patterns; track pattern.id) {
+            <button
+              type="button"
+              data-testid="pattern"
+              [attr.aria-pressed]="selectedId() === pattern.id"
+              (click)="select(pattern)"
+              [disabled]="submitting()"
+              [class]="
+                selectedId() === pattern.id
+                  ? 'border-primary ring-2 ring-primary/60'
+                  : 'border-edge hover:border-primary/70'
+              "
+              class="group relative min-w-0 rounded-2xl border bg-surface p-5 text-left transition-colors disabled:opacity-60"
+            >
+              @if (selectedId() === pattern.id) {
+                <span
+                  class="absolute right-3 top-3 flex size-6 items-center justify-center rounded-full bg-primary text-white"
+                >
+                  <lucide-icon name="check" class="size-4" />
+                </span>
+              }
+              <h2 class="mb-3 text-sm font-semibold text-primary-soft group-hover:text-primary">
+                {{ pattern.title }}
+              </h2>
+              <app-code-block [code]="pattern.code" [language]="pattern.language" />
+            </button>
+          }
         </div>
 
         <div class="mx-auto mt-5 max-w-2xl">
@@ -93,6 +92,22 @@
             placeholder="Why? (optional — shared anonymously on the rankings page)"
             class="w-full resize-none rounded-xl border border-edge bg-surface px-4 py-2.5 text-sm outline-none placeholder:text-ink-muted focus:border-primary/60"
           ></textarea>
+        </div>
+
+        <div class="mx-auto mt-4 flex max-w-2xl flex-col items-center gap-2">
+          <button
+            type="button"
+            data-testid="submit-vote"
+            (click)="submitSelected()"
+            [disabled]="selectedId() === null || submitting()"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-8"
+          >
+            <lucide-icon name="check" class="size-4" />
+            Submit vote
+          </button>
+          @if (selectedId() === null) {
+            <p class="text-xs text-ink-muted">Pick the option you prefer, then submit.</p>
+          }
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-center gap-3">

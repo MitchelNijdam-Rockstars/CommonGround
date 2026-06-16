@@ -45,6 +45,30 @@ class EloCalculatorTest {
     }
 
     @Test
+    fun `a single beaten pattern reduces to one head-to-head outcome`() {
+        val (winner, losers) = EloCalculator.ratingsAfterWinAgainstAll(1500.0, listOf(1500.0))
+        val (refWinner, refLoser) = EloCalculator.ratingsAfterWin(1500.0, 1500.0)
+        assertThat(winner).isCloseTo(refWinner, within(0.0001))
+        assertThat(losers).singleElement().isEqualTo(refLoser)
+    }
+
+    @Test
+    fun `beating several patterns sums the winner gains and is order-independent`() {
+        val losers = listOf(1400.0, 1600.0, 1500.0)
+        val (winner, newLosers) = EloCalculator.ratingsAfterWinAgainstAll(1500.0, losers)
+        val (winnerReordered, _) = EloCalculator.ratingsAfterWinAgainstAll(1500.0, losers.reversed())
+
+        // each opponent dropped, the winner climbed, and ordering does not matter
+        assertThat(winner).isGreaterThan(1500.0)
+        assertThat(winner).isCloseTo(winnerReordered, within(0.0001))
+        newLosers.forEachIndexed { i, newRating -> assertThat(newRating).isLessThan(losers[i]) }
+
+        // the winner's total gain equals the sum of every opponent's loss
+        val totalLoss = losers.indices.sumOf { losers[it] - newLosers[it] }
+        assertThat(winner - 1500.0).isCloseTo(totalLoss, within(0.0001))
+    }
+
+    @Test
     fun `known reference values are reproduced`() {
         // expected score for 1613 vs 1609 is ~0.5058 (classic Elo example)
         assertThat(EloCalculator.expectedScore(1613.0, 1609.0)).isCloseTo(0.5058, within(0.001))

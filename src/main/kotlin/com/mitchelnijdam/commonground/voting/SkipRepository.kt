@@ -5,12 +5,7 @@ import org.springframework.data.jpa.repository.Query
 
 interface SkipRepository : JpaRepository<Skip, Long> {
 
-    /** Unordered pattern pairs this user has already skipped, as "smallerId:largerId" keys. */
-    @Query(
-        """
-        select concat(least(s.patternA.id, s.patternB.id), ':', greatest(s.patternA.id, s.patternB.id))
-        from Skip s where s.user.id = :userId
-        """,
-    )
-    fun findSkippedPairKeysByUserId(userId: Long): Set<String>
+    /** Topic ids this user has already skipped (hidden from their feed afterwards). */
+    @Query("select distinct s.topic.id from Skip s where s.user.id = :userId")
+    fun findSkippedTopicIdsByUserId(userId: Long): Set<Long>
 }

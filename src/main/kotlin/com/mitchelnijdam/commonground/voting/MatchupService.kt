@@ -3,6 +3,7 @@ package com.mitchelnijdam.commonground.voting
 import com.mitchelnijdam.commonground.pattern.Pattern
 import com.mitchelnijdam.commonground.pattern.PatternRepository
 import com.mitchelnijdam.commonground.pattern.toDto
+import com.mitchelnijdam.commonground.topic.Topic
 import com.mitchelnijdam.commonground.topic.toDto
 import com.mitchelnijdam.commonground.user.User
 import org.springframework.stereotype.Service
@@ -16,85 +17,48 @@ class MatchupService(
 ) {
 
     /**
-     * Generates up to [count] matchups for the user. Each matchup comes from a distinct random
-     * Topic (with at least two active Patterns), so no Topic or pair repeats within a batch.
-     * Pairs the user has voted or skipped on before are avoided as long as unseen pairs exist.
+     * Generates up to [count] matchups for the user. Each matchup is a distinct Topic (with at
+     * least two active Patterns) showing all of its active Patterns at once, in random order.
+     * Topics the user already voted or skipped are excluded, so every Topic is seen once.
      */
     @Transactional(readOnly = true)
     fun generateBatch(user: User, count: Int): List<MatchupDto> {
-        val eligibleTopicIds = patternRepository.findTopicIdsWithAtLeastTwoActivePatterns().toSet()
-        if (eligibleTopicIds.isEmpty()) return emptyList()
+        val topics = openTopics(user)
+        if (topics.isEmpty()) return emptyList()
 
-        val seenPairs = voteRepository.findVotedPairKeysByUserId(user.id) +
-            skipRepository.findSkippedPairKeysByUserId(user.id)
-
-        val patternsByTopic = patternRepository.findByActiveTrue()
-            .filter { it.topic.id in eligibleTopicIds }
-            .groupBy { it.topic }
-            .filterKeys { topic -> matchesExpertise(user, topic.labels.map { it.id }) }
-
-        return patternsByTopic.entries
+        return topics
             .shuffled()
-            .mapNotNull { (topic, patterns) -> pickPair(patterns, seenPairs)?.let { topic to it } }
-            // stable sort: topics that still have an unseen pair come first, shuffle order otherwise kept
-            .sortedBy { (_, pick) -> pick.alreadySeen }
             .take(count)
-            .map { (topic, pick) ->
+            .map { (topic, patterns) ->
                 MatchupDto(
                     topic = topic.toDto(),
-                    patternA = pick.pair.first.toDto(),
-                    patternB = pick.pair.second.toDto(),
+                    patterns = patterns.shuffled().map { it.toDto() },
                     topicVoteCount = voteRepository.countByTopicId(topic.id),
                 )
             }
     }
 
-    /** Topics open for this user: matchup-eligible and matching their LANGUAGE expertise filter. */
+    /** Topics open for this user: matchup-eligible, expertise-matching, and not yet voted/skipped. */
     @Transactional(readOnly = true)
-    fun countOpenTopics(user: User): Long {
+    fun countOpenTopics(user: User): Long = openTopics(user).size.toLong()
+
+    private fun openTopics(user: User): List<Pair<Topic, List<Pattern>>> {
         val eligibleTopicIds = patternRepository.findTopicIdsWithAtLeastTwoActivePatterns().toSet()
-        if (eligibleTopicIds.isEmpty()) return 0
+        if (eligibleTopicIds.isEmpty()) return emptyList()
+
+        val seenTopicIds = voteRepository.findVotedTopicIdsByUserId(user.id) +
+            skipRepository.findSkippedTopicIdsByUserId(user.id)
 
         return patternRepository.findByActiveTrue()
-            .filter { it.topic.id in eligibleTopicIds }
-            .map { it.topic }
-            .distinctBy { it.id }
-            .count { topic -> matchesExpertise(user, topic.labels.map { it.id }) }
-            .toLong()
+            .filter { it.topic.id in eligibleTopicIds && it.topic.id !in seenTopicIds }
+            .groupBy { it.topic }
+            .filterKeys { topic -> matchesExpertise(user, topic.labels.map { it.id }) }
+            .map { (topic, patterns) -> topic to patterns }
     }
 
     /** No expertise selected means no filter; otherwise at least one expertise Label must match. */
     private fun matchesExpertise(user: User, topicLabelIds: List<Long>): Boolean {
         val expertiseIds = user.expertise.map { it.id }.toSet()
         return expertiseIds.isEmpty() || topicLabelIds.any { it in expertiseIds }
-    }
-
-    private data class PairPick(val pair: Pair<Pattern, Pattern>, val alreadySeen: Boolean)
-
-    /**
-     * Picks a random pair, preferring pairs the user has not seen. Falls back to a random seen
-     * pair so a fully-explored Topic still produces matchups instead of starving the feed.
-     */
-    private fun pickPair(patterns: List<Pattern>, seenPairs: Set<String>): PairPick? {
-        if (patterns.size < 2) return null
-
-        val allPairs = patterns.flatMapIndexed { i, a ->
-            patterns.drop(i + 1).map { b -> a to b }
-        }
-        val unseen = allPairs.filter { (a, b) -> pairKey(a.id, b.id) !in seenPairs }
-
-        return if (unseen.isNotEmpty()) {
-            PairPick(unseen.random().shuffledPair(), alreadySeen = false)
-        } else {
-            PairPick(allPairs.random().shuffledPair(), alreadySeen = true)
-        }
-    }
-
-    private fun Pair<Pattern, Pattern>.shuffledPair(): Pair<Pattern, Pattern> =
-        if (listOf(true, false).random()) this else second to first
-
-    companion object {
-        fun pairKey(patternId1: Long, patternId2: Long): String =
-            "${minOf(patternId1, patternId2)}:${maxOf(patternId1, patternId2)}"
     }
 }

@@ -35,11 +35,11 @@ class VotingController(
 
     @PostMapping("/vote")
     fun vote(@CurrentUser user: User, @Valid @RequestBody request: VoteRequest): VoteResultDto =
-        votingService.castVote(user, request.winnerPatternId, request.loserPatternId, request.comment)
+        votingService.castVote(user, request.winnerPatternId, request.beatenPatternIds, request.comment)
 
     @PostMapping("/skip")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun skip(@CurrentUser user: User, @Valid @RequestBody request: SkipRequest) {
-        votingService.recordSkip(user, request.patternAId, request.patternBId, request.reason)
+        votingService.recordSkip(user, request.topicId, request.reason)
     }
 }

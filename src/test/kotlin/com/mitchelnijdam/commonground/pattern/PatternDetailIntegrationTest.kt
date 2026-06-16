@@ -70,7 +70,7 @@ class PatternDetailIntegrationTest : IntegrationTestBase() {
                 user = voter,
                 topic = topic,
                 winnerPattern = winnerPattern,
-                loserPattern = if (winnerPattern == winner) loser else winner,
+                beatenPatterns = setOf(if (winnerPattern == winner) loser else winner),
                 comment = comment,
                 createdAt = createdAt,
             ),

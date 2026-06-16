@@ -54,6 +54,11 @@ class VotingIntegrationTest : IntegrationTestBase() {
         return (0 until node.size()).map { node.get(it) }
     }
 
+    private fun patternIds(matchup: JsonNode): Set<Long> {
+        val patterns = matchup.get("patterns")
+        return (0 until patterns.size()).map { patterns.get(it).get("id").asLong() }.toSet()
+    }
+
     private lateinit var topic: Topic
     private lateinit var patternA: Pattern
     private lateinit var patternB: Pattern
@@ -66,15 +71,14 @@ class VotingIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `casting a vote updates ratings and counters of both patterns atomically`() {
+    fun `casting a vote updates ratings and counters of every shown pattern atomically`() {
         mockMvc.perform(
             post("/api/voting/vote")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"winnerPatternId": ${patternA.id}, "loserPatternId": ${patternB.id}}"""),
+                .content("""{"winnerPatternId": ${patternA.id}, "beatenPatternIds": [${patternB.id}]}"""),
         )
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.winnerNewRating").value(1516.0))
-            .andExpect(jsonPath("$.loserNewRating").value(1484.0))
 
         val winner = patternRepository.findById(patternA.id).orElseThrow()
         val loser = patternRepository.findById(patternB.id).orElseThrow()
@@ -89,11 +93,36 @@ class VotingIntegrationTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `skipping records the reason but never touches ratings or counters`() {
+    fun `picking one favorite beats every other shown pattern`() {
+        val patternC = patternRepository.save(Pattern(topic = topic, title = "Optional", code = "c", language = "kotlin"))
+
+        mockMvc.perform(
+            post("/api/voting/vote")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""{"winnerPatternId": ${patternA.id}, "beatenPatternIds": [${patternB.id}, ${patternC.id}]}"""),
+        ).andExpect(status().isOk)
+
+        val winner = patternRepository.findById(patternA.id).orElseThrow()
+        val loserB = patternRepository.findById(patternB.id).orElseThrow()
+        val loserC = patternRepository.findById(patternC.id).orElseThrow()
+
+        // winner gained against both, both losers were shown once and chosen zero times
+        assertThat(winner.eloRating).isGreaterThan(1500.0)
+        assertThat(winner.timesShown).isEqualTo(1)
+        assertThat(winner.timesChosen).isEqualTo(1)
+        assertThat(loserB.timesShown).isEqualTo(1)
+        assertThat(loserB.timesChosen).isEqualTo(0)
+        assertThat(loserC.timesShown).isEqualTo(1)
+        assertThat(loserC.timesChosen).isEqualTo(0)
+        assertThat(voteRepository.count()).isEqualTo(1L)
+    }
+
+    @Test
+    fun `skipping records the topic and reason but never touches ratings or counters`() {
         mockMvc.perform(
             post("/api/voting/skip")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"patternAId": ${patternA.id}, "patternBId": ${patternB.id}, "reason": "NOT_FAMILIAR"}"""),
+                .content("""{"topicId": ${topic.id}, "reason": "NOT_FAMILIAR"}"""),
         ).andExpect(status().isNoContent)
 
         val a = patternRepository.findById(patternA.id).orElseThrow()
@@ -104,19 +133,19 @@ class VotingIntegrationTest : IntegrationTestBase() {
         val skips = skipRepository.findAll()
         assertThat(skips).hasSize(1)
         assertThat(skips.first().reason).isEqualTo(SkipReason.NOT_FAMILIAR)
+        assertThat(skips.first().topic.id).isEqualTo(topic.id)
     }
 
     @Test
-    fun `a matchup serves two distinct active patterns from one topic`() {
+    fun `a matchup serves all active patterns of one topic`() {
         mockMvc.perform(get("/api/voting/matchup"))
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.topic.id").value(topic.id))
-            .andExpect(jsonPath("$.patternA.id").isNumber)
-            .andExpect(jsonPath("$.patternB.id").isNumber)
+            .andExpect(jsonPath("$.patterns.length()").value(2))
     }
 
     @Test
-    fun `a batch never repeats a topic or a pattern pair`() {
+    fun `a batch never repeats a topic and shows all its patterns`() {
         // a second eligible topic
         val topic2 = topicRepository.save(Topic(question = "Constructor or builder?"))
         patternRepository.save(Pattern(topic = topic2, title = "Constructor", code = "c"))
@@ -131,13 +160,7 @@ class VotingIntegrationTest : IntegrationTestBase() {
 
         val topicIds = matchups.map { it.get("topic").get("id").asLong() }
         assertThat(topicIds).describedAs("topics must not repeat in a batch").doesNotHaveDuplicates()
-
-        val pairKeys = matchups.map {
-            val a = it.get("patternA").get("id").asLong()
-            val b = it.get("patternB").get("id").asLong()
-            MatchupService.pairKey(a, b)
-        }
-        assertThat(pairKeys).describedAs("pairs must not repeat in a batch").doesNotHaveDuplicates()
+        assertThat(matchups).allSatisfy { assertThat(patternIds(it)).hasSize(2) }
     }
 
     @Test
@@ -161,17 +184,17 @@ class VotingIntegrationTest : IntegrationTestBase() {
         mockMvc.perform(
             post("/api/voting/vote")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"winnerPatternId": ${patternA.id}, "loserPatternId": ${foreign.id}}"""),
+                .content("""{"winnerPatternId": ${patternA.id}, "beatenPatternIds": [${foreign.id}]}"""),
         ).andExpect(status().isBadRequest)
     }
 
     @Test
-    fun `already voted pairs are not served again while unseen pairs exist`() {
-        // vote on the only pair of topic 1
+    fun `a topic already voted on is not served again`() {
+        // vote on topic 1
         mockMvc.perform(
             post("/api/voting/vote")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""{"winnerPatternId": ${patternA.id}, "loserPatternId": ${patternB.id}}"""),
+                .content("""{"winnerPatternId": ${patternA.id}, "beatenPatternIds": [${patternB.id}]}"""),
         ).andExpect(status().isOk)
 
         // add an unseen topic
@@ -179,16 +202,13 @@ class VotingIntegrationTest : IntegrationTestBase() {
         val p3 = patternRepository.save(Pattern(topic = topic2, title = "P3", code = "c"))
         val p4 = patternRepository.save(Pattern(topic = topic2, title = "P4", code = "d"))
 
-        val json = mockMvc.perform(get("/api/voting/matchups").param("count", "1"))
+        val json = mockMvc.perform(get("/api/voting/matchups").param("count", "10"))
             .andExpect(status().isOk)
             .andReturn().response.contentAsString
 
         val matchups = parseArray(json)
-        assertThat(matchups).hasSize(1)
-        val servedIds = setOf(
-            matchups[0].get("patternA").get("id").asLong(),
-            matchups[0].get("patternB").get("id").asLong(),
-        )
-        assertThat(servedIds).describedAs("the unseen pair should be preferred").isEqualTo(setOf(p3.id, p4.id))
+        assertThat(matchups).describedAs("the voted topic is hidden, only the fresh one remains").hasSize(1)
+        assertThat(matchups[0].get("topic").get("id").asLong()).isEqualTo(topic2.id)
+        assertThat(patternIds(matchups[0])).isEqualTo(setOf(p3.id, p4.id))
     }
 }
