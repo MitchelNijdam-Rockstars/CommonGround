@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Observable } from 'rxjs';
 import { PatternSuggestion, TopicSuggestion } from '../../core/models/suggestion.model';
@@ -16,11 +17,15 @@ import { ImportDialog } from './components/import-dialog/import-dialog';
 })
 export class AdminReview implements OnInit {
   private readonly api = inject(SuggestionsApi);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   protected readonly patternSuggestions = signal<PatternSuggestion[]>([]);
   protected readonly topicSuggestions = signal<TopicSuggestion[]>([]);
   protected readonly loading = signal(true);
   protected readonly importOpen = signal(false);
+  /** Pulses the import button when an admin is sent here to set up their first topics. */
+  protected readonly highlightImport = signal(false);
 
   /** id of the suggestion whose rejection-reason input is open, prefixed by kind */
   protected readonly rejectingKey = signal<string | null>(null);
@@ -28,6 +33,20 @@ export class AdminReview implements OnInit {
 
   ngOnInit(): void {
     this.reload();
+    if (this.route.snapshot.queryParamMap.get('setup') === 'import') {
+      this.highlightImport.set(true);
+      // Drop the flag from the URL so a refresh or back-navigation doesn't re-trigger the nudge.
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { setup: null },
+        replaceUrl: true,
+      });
+    }
+  }
+
+  openImport(): void {
+    this.highlightImport.set(false);
+    this.importOpen.set(true);
   }
 
   onImportClosed(imported: boolean): void {

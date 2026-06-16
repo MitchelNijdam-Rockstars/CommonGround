@@ -6,15 +6,38 @@
         Approve community suggestions into the voting pool, or reject them with feedback.
       </p>
     </div>
-    <button
-      type="button"
-      (click)="importOpen.set(true)"
-      data-testid="open-import"
-      class="flex shrink-0 items-center gap-1.5 rounded-lg border border-edge px-4 py-2 text-sm font-semibold hover:border-primary/50 hover:text-primary"
-    >
-      <lucide-icon name="upload" class="size-4" />
-      Import
-    </button>
+    <div class="relative shrink-0">
+      <button
+        type="button"
+        (click)="openImport()"
+        data-testid="open-import"
+        [class.import-pulse]="highlightImport()"
+        [class.border-primary]="highlightImport()"
+        [class.text-primary]="highlightImport()"
+        class="flex items-center gap-1.5 rounded-lg border border-edge px-4 py-2 text-sm font-semibold hover:border-primary/50 hover:text-primary"
+      >
+        <lucide-icon name="upload" class="size-4" />
+        Import
+      </button>
+
+      @if (highlightImport()) {
+        <div
+          class="coach-mark absolute right-0 top-full z-10 mt-3 w-60 rounded-xl border border-primary/40 bg-surface-light p-3 text-left shadow-xl shadow-primary/10"
+          data-testid="import-coach-mark"
+        >
+          <span
+            class="absolute -top-1.5 right-6 size-3 rotate-45 border-l border-t border-primary/40 bg-surface-light"
+          ></span>
+          <p class="flex items-center gap-1.5 text-sm font-semibold text-primary">
+            <lucide-icon name="sparkles" class="size-4" />
+            Start here
+          </p>
+          <p class="mt-1 text-xs text-ink-muted">
+            Import a starter set of coding standards to fill the voting pool.
+          </p>
+        </div>
+      }
+    </div>
   </header>
 
   @if (loading()) {

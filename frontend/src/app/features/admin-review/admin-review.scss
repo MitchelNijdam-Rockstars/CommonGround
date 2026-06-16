@@ -1,0 +1,41 @@
+// Draws a fresh admin's eye to the Import button when they're sent here to set up their first topics.
+:host {
+  --pulse-color: var(--color-primary, #22d3ee);
+}
+
+.import-pulse {
+  animation: import-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes import-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(34 211 238 / 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(34 211 238 / 0);
+  }
+}
+
+.coach-mark {
+  animation: coach-mark-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes coach-mark-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Respect users who prefer no motion: drop the pulse, keep the static highlight from the bound classes.
+@media (prefers-reduced-motion: reduce) {
+  .import-pulse,
+  .coach-mark {
+    animation: none;
+  }
+}

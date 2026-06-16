@@ -168,8 +168,23 @@ describe('Voting', () => {
     fixture.detectChanges();
 
     http.expectOne((req) => req.url === '/api/voting/matchups').flush([]);
+    // An empty feed triggers a topics lookup; topics still exist, so it's a caught-up state.
+    http.expectOne((req) => req.url === '/api/topics').flush([{ id: 1 }]);
     fixture.detectChanges();
 
     expect(el.textContent).toContain('All caught up!');
+    expect(el.textContent).not.toContain('No topics yet');
+  });
+
+  it('shows the empty-system onboarding state when there are no topics at all', () => {
+    const fixture = TestBed.createComponent(Voting);
+    fixture.detectChanges();
+    http.expectOne((req) => req.url === '/api/voting/matchups').flush([]);
+    http.expectOne((req) => req.url === '/api/topics').flush([]);
+    fixture.detectChanges();
+
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('No topics yet');
+    expect(el.textContent).not.toContain('All caught up!');
   });
 });

@@ -1,9 +1,11 @@
 import { Component, OnInit, computed, inject, isDevMode, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { Matchup, SkipReason } from '../../core/models/matchup.model';
 import { Pattern } from '../../core/models/pattern.model';
 import { Auth } from '../../core/services/auth';
+import { CatalogApi } from '../../core/services/catalog-api';
 import { VotingApi } from '../../core/services/voting-api';
 import { CodeBlock } from '../../shared/components/code-block/code-block';
 import { LabelBadge } from '../../shared/components/label-badge/label-badge';
@@ -19,14 +21,20 @@ const BATCH_SIZE = 10;
 export class Voting implements OnInit {
   private readonly api = inject(VotingApi);
   private readonly auth = inject(Auth);
+  private readonly catalog = inject(CatalogApi);
+  private readonly router = inject(Router);
 
   protected readonly batch = signal<Matchup[]>([]);
   protected readonly index = signal(0);
   protected readonly loading = signal(true);
   protected readonly submitting = signal(false);
   protected readonly allCaughtUp = signal(false);
+  /** True when the whole system has no topics yet (a fresh install), not just this user being done. */
+  protected readonly noTopics = signal(false);
   protected readonly selectedId = signal<number | null>(null);
   protected comment = '';
+
+  protected readonly isAdmin = this.auth.isAdmin;
 
   protected readonly current = computed<Matchup | null>(() => this.batch()[this.index()] ?? null);
   protected readonly progress = computed(() => `${this.index() + 1} / ${this.batch().length}`);
@@ -115,6 +123,7 @@ export class Voting implements OnInit {
         this.index.set(0);
         this.allCaughtUp.set(matchups.length === 0);
         this.loading.set(false);
+        if (matchups.length === 0) this.checkForTopics();
       },
       error: () => {
         this.batch.set([]);
@@ -122,5 +131,21 @@ export class Voting implements OnInit {
         this.loading.set(false);
       },
     });
+  }
+
+  /**
+   * Distinguishes an empty feed caused by a fresh, topic-less install from one where the user has
+   * simply voted on everything — so admins can be nudged toward importing their first topics.
+   */
+  private checkForTopics(): void {
+    this.catalog.getTopics().subscribe({
+      next: (topics) => this.noTopics.set(topics.length === 0),
+      error: () => this.noTopics.set(false),
+    });
+  }
+
+  /** Sends an admin to the review screen with a flag that pulses the import button into focus. */
+  goToImport(): void {
+    this.router.navigate(['/admin/review'], { queryParams: { setup: 'import' } });
   }
 }
