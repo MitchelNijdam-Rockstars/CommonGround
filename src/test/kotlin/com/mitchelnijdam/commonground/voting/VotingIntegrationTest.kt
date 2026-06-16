@@ -94,7 +94,7 @@ class VotingIntegrationTest : IntegrationTestBase() {
 
     @Test
     fun `picking one favorite beats every other shown pattern`() {
-        val patternC = patternRepository.save(Pattern(topic = topic, title = "Optional", code = "c", language = "kotlin"))
+        val patternC = patternRepository.save(Pattern(topic = topic, title = "Optional", code = "c"))
 
         mockMvc.perform(
             post("/api/voting/vote")
