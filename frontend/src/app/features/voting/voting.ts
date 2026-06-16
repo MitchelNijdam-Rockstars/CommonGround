@@ -25,6 +25,7 @@ export class Voting implements OnInit {
   protected readonly loading = signal(true);
   protected readonly submitting = signal(false);
   protected readonly allCaughtUp = signal(false);
+  protected readonly selectedId = signal<number | null>(null);
   protected comment = '';
 
   protected readonly current = computed<Matchup | null>(() => this.batch()[this.index()] ?? null);
@@ -36,7 +37,23 @@ export class Voting implements OnInit {
     this.loadBatch();
   }
 
-  vote(winner: Pattern): void {
+  /** First click picks a pattern (so the comment can still be filled in); a second confirms it. */
+  select(winner: Pattern): void {
+    if (this.submitting()) return;
+    if (this.selectedId() === winner.id) {
+      this.submitVote(winner);
+    } else {
+      this.selectedId.set(winner.id);
+    }
+  }
+
+  submitSelected(): void {
+    const matchup = this.current();
+    const winner = matchup?.patterns.find((p) => p.id === this.selectedId());
+    if (winner) this.submitVote(winner);
+  }
+
+  private submitVote(winner: Pattern): void {
     const matchup = this.current();
     if (!matchup || this.submitting()) return;
     this.submitting.set(true);
@@ -63,6 +80,7 @@ export class Voting implements OnInit {
   protected afterSubmission(): void {
     this.submitting.set(false);
     this.comment = '';
+    this.selectedId.set(null);
     if (this.index() + 1 < this.batch().length) {
       this.index.update((i) => i + 1);
     } else {

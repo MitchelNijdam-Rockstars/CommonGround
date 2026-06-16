@@ -57,6 +57,10 @@ describe('Voting', () => {
     return Array.from(el.querySelectorAll('[data-testid="pattern"]'));
   }
 
+  function submitButton(el: HTMLElement): HTMLButtonElement {
+    return el.querySelector('[data-testid="submit-vote"]') as HTMLButtonElement;
+  }
+
   it('renders the first matchup of the batch with all its patterns and progress', () => {
     const fixture = createWithBatch([matchup(1, [11, 12, 13]), matchup(2, [21, 22])]);
     const el = fixture.nativeElement as HTMLElement;
@@ -66,12 +70,20 @@ describe('Voting', () => {
     expect(el.querySelector('[data-testid="progress"]')?.textContent?.trim()).toBe('1 / 2');
   });
 
-  it('clicking a pattern card votes it as winner over the rest and advances', () => {
+  it('selecting a card does not vote until the submit button is pressed', () => {
     const fixture = createWithBatch([matchup(1, [11, 12, 13]), matchup(2, [21, 22])]);
     const el = fixture.nativeElement as HTMLElement;
 
-    cards(el)[1].click(); // pick pattern 12
+    // submit is disabled until a card is picked
+    expect(submitButton(el).disabled).toBe(true);
 
+    cards(el)[1].click(); // pick pattern 12
+    fixture.detectChanges();
+    http.expectNone('/api/voting/vote'); // no vote yet
+    expect(submitButton(el).disabled).toBe(false);
+    expect(cards(el)[1].getAttribute('aria-pressed')).toBe('true');
+
+    submitButton(el).click();
     const voteRequest = http.expectOne('/api/voting/vote');
     expect(voteRequest.request.body).toEqual({
       winnerPatternId: 12,
@@ -83,6 +95,28 @@ describe('Voting', () => {
 
     expect(el.querySelector('h1')?.textContent).toContain('Question 2?');
     expect(el.querySelector('[data-testid="progress"]')?.textContent?.trim()).toBe('2 / 2');
+    expect(submitButton(el).disabled).toBe(true); // selection cleared for the next matchup
+  });
+
+  it('clicking the already-selected card a second time confirms the vote', () => {
+    const fixture = createWithBatch([matchup(1, [11, 12]), matchup(2, [21, 22])]);
+    const el = fixture.nativeElement as HTMLElement;
+
+    cards(el)[0].click(); // select
+    fixture.detectChanges();
+    http.expectNone('/api/voting/vote');
+
+    cards(el)[0].click(); // confirm
+    const voteRequest = http.expectOne('/api/voting/vote');
+    expect(voteRequest.request.body).toEqual({
+      winnerPatternId: 11,
+      beatenPatternIds: [12],
+      comment: null,
+    });
+    voteRequest.flush({ voteId: 1, winnerNewRating: 1516, currentStreak: 1 });
+    fixture.detectChanges();
+
+    expect(el.querySelector('h1')?.textContent).toContain('Question 2?');
   });
 
   it('sends the optional comment with the vote and clears it afterwards', async () => {
@@ -94,7 +128,9 @@ describe('Voting', () => {
     textarea.dispatchEvent(new Event('input'));
     await fixture.whenStable();
 
-    cards(el)[0].click();
+    cards(el)[0].click(); // select
+    fixture.detectChanges();
+    submitButton(el).click(); // confirm — comment filled in after picking
 
     const voteRequest = http.expectOne('/api/voting/vote');
     expect(voteRequest.request.body.comment).toBe('Cleaner null handling');
@@ -126,7 +162,9 @@ describe('Voting', () => {
     const fixture = createWithBatch([matchup(1, [11, 12])]);
     const el = fixture.nativeElement as HTMLElement;
 
-    cards(el)[0].click();
+    cards(el)[0].click(); // select
+    fixture.detectChanges();
+    submitButton(el).click(); // confirm
     http
       .expectOne('/api/voting/vote')
       .flush({ voteId: 1, winnerNewRating: 1516, currentStreak: 1 });
