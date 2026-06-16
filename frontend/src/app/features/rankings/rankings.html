@@ -20,7 +20,7 @@
         (click)="selectAlgorithm('ELO')"
         class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors"
         [class.bg-primary]="algorithm() === 'ELO'"
-        [class.text-white]="algorithm() === 'ELO'"
+        [class.text-background]="algorithm() === 'ELO'"
         [class.text-ink-muted]="algorithm() !== 'ELO'"
       >
         <lucide-icon name="trending-up" class="size-4" />
@@ -34,7 +34,7 @@
         (click)="selectAlgorithm('WIN_RATE')"
         class="flex items-center gap-2 rounded-lg px-4 py-1.5 text-sm font-medium transition-colors"
         [class.bg-primary]="algorithm() === 'WIN_RATE'"
-        [class.text-white]="algorithm() === 'WIN_RATE'"
+        [class.text-background]="algorithm() === 'WIN_RATE'"
         [class.text-ink-muted]="algorithm() !== 'WIN_RATE'"
       >
         <lucide-icon name="swords" class="size-4" />
@@ -50,7 +50,7 @@
       class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       <lucide-icon name="download" class="size-4" />
-      {{ exporting() ? 'Exporting…' : 'Export' }}
+      {{ exporting() ? 'Exporting…' : 'Export instructions for AI agents' }}
     </button>
   </div>
 
