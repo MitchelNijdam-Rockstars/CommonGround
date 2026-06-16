@@ -13,6 +13,18 @@
         There are no matchups for you right now. Check back later, or browse the catalog to suggest
         new patterns.
       </p>
+      @if (isDev) {
+        <button
+          type="button"
+          data-testid="dev-reset"
+          (click)="resetDev()"
+          [disabled]="submitting()"
+          class="mx-auto mt-6 flex items-center gap-2 rounded-lg border border-dashed border-streak/60 px-4 py-2 text-xs font-medium text-streak transition-colors hover:bg-streak/10 disabled:opacity-50"
+        >
+          <lucide-icon name="flask-conical" class="size-4" />
+          Reset my votes (dev)
+        </button>
+      }
     </div>
   } @else {
     @if (current(); as matchup) {
@@ -52,7 +64,10 @@
           }
         </header>
 
-        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          class="grid gap-4 sm:grid-cols-2"
+          [class.lg:grid-cols-3]="matchup.patterns.length % 2 !== 0"
+        >
           @for (pattern of matchup.patterns; track pattern.id) {
             <button
               type="button"
@@ -100,7 +115,7 @@
             data-testid="submit-vote"
             (click)="submitSelected()"
             [disabled]="selectedId() === null || submitting()"
-            class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-8"
+            class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-primary-soft disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto sm:px-8"
           >
             <lucide-icon name="check" class="size-4" />
             Submit vote
@@ -132,6 +147,21 @@
             Not familiar enough
           </button>
         </div>
+
+        @if (isDev) {
+          <div class="mt-8 flex justify-center">
+            <button
+              type="button"
+              data-testid="dev-reset"
+              (click)="resetDev()"
+              [disabled]="submitting()"
+              class="flex items-center gap-1.5 rounded-lg border border-dashed border-streak/50 px-3 py-1.5 text-xs font-medium text-streak/80 transition-colors hover:bg-streak/10 disabled:opacity-50"
+            >
+              <lucide-icon name="flask-conical" class="size-3.5" />
+              Reset my votes (dev)
+            </button>
+          </div>
+        }
       </div>
     }
   }

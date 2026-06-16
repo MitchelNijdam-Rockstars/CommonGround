@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, isDevMode, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Matchup, SkipReason } from '../../core/models/matchup.model';
@@ -31,6 +31,9 @@ export class Voting implements OnInit {
   protected readonly current = computed<Matchup | null>(() => this.batch()[this.index()] ?? null);
   protected readonly progress = computed(() => `${this.index() + 1} / ${this.batch().length}`);
   protected readonly streak = signal(0);
+
+  /** True when served by `ng serve` (dev/local), not a production build — gates dev-only controls. */
+  protected readonly isDev = isDevMode();
 
   ngOnInit(): void {
     this.streak.set(this.auth.user()?.currentStreak ?? 0);
@@ -86,6 +89,22 @@ export class Voting implements OnInit {
     } else {
       this.loadBatch();
     }
+  }
+
+  /** Dev-only: wipe this user's votes/skips, then reload the feed so every topic reappears. */
+  resetDev(): void {
+    if (this.submitting()) return;
+    this.submitting.set(true);
+    this.api.resetMyVotes().subscribe({
+      next: () => {
+        this.submitting.set(false);
+        this.selectedId.set(null);
+        this.comment = '';
+        this.allCaughtUp.set(false);
+        this.loadBatch();
+      },
+      error: () => this.submitting.set(false),
+    });
   }
 
   protected loadBatch(): void {

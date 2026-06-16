@@ -28,4 +28,9 @@ export class VotingApi {
   skip(topicId: number, reason: SkipReason): Observable<void> {
     return this.http.post<void>('/api/voting/skip', { topicId, reason });
   }
+
+  /** Dev-only: clears the current user's votes/skips so every topic becomes votable again. */
+  resetMyVotes(): Observable<void> {
+    return this.http.post<void>('/api/dev/voting/reset', {});
+  }
 }
