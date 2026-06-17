@@ -45,12 +45,11 @@
     <button
       type="button"
       data-testid="export-button"
-      (click)="exportMarkdown()"
-      [disabled]="exporting()"
-      class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+      (click)="openExportDialog()"
+      class="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-medium text-background transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >
       <lucide-icon name="download" class="size-4" />
-      {{ exporting() ? 'Exporting…' : 'Export instructions for AI agents' }}
+      Export instructions for AI agents
     </button>
   </div>
 
@@ -135,5 +134,9 @@
       [rank]="sel.rank"
       (close)="closePattern()"
     />
+  }
+
+  @if (exportDialogOpen()) {
+    <app-export-dialog (closed)="closeExportDialog()" />
   }
 </section>

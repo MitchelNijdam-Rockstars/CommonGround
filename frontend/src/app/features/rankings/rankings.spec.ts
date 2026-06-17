@@ -78,27 +78,18 @@ describe('Rankings', () => {
     ).toBe('true');
   });
 
-  it('clicking Export requests the markdown export as a blob', async () => {
-    const createObjectURL = vi.fn(() => 'blob:mock');
-    const revokeObjectURL = vi.fn();
-    URL.createObjectURL = createObjectURL as unknown as typeof URL.createObjectURL;
-    URL.revokeObjectURL = revokeObjectURL as unknown as typeof URL.revokeObjectURL;
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
-
+  it('clicking Export opens the export dialog', async () => {
     const fixture = await setup('/');
     http.expectOne((r) => r.url === '/api/rankings').flush([section(1600)]);
     fixture.detectChanges();
 
     const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[data-testid="export-dialog"]')).toBeNull();
+
     (el.querySelector('[data-testid="export-button"]') as HTMLButtonElement).click();
+    fixture.detectChanges();
 
-    const req = http.expectOne((r) => r.url === '/api/rankings/export');
-    expect(req.request.responseType).toBe('blob');
-    req.flush(new Blob(['# md'], { type: 'text/markdown' }), {
-      headers: { 'Content-Disposition': 'attachment; filename="common-ground-2026-06-13.md"' },
-    });
-
-    expect(createObjectURL).toHaveBeenCalled();
+    expect(el.querySelector('[data-testid="export-dialog"]')).not.toBeNull();
   });
 
   it('switching algorithm updates the URL and re-fetches', async () => {

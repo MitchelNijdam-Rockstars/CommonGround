@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
-import java.time.LocalDate
 
 @RestController
 @RequestMapping("/api/rankings")
@@ -26,11 +25,12 @@ class RankingsController(
     }
 
     @GetMapping("/export")
-    fun export(): ResponseEntity<String> {
-        val filename = "common-ground-${LocalDate.now()}.md"
+    fun export(@RequestParam(defaultValue = "GENERIC") format: String): ResponseEntity<String> {
+        val exportFormat = runCatching { ExportFormat.valueOf(format.uppercase()) }
+            .getOrElse { throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unknown export format: $format") }
         return ResponseEntity.ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"${exportFormat.filename}\"")
             .contentType(MediaType.parseMediaType("text/markdown;charset=UTF-8"))
-            .body(markdownExportService.export())
+            .body(markdownExportService.export(exportFormat))
     }
 }

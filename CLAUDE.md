@@ -146,7 +146,16 @@ Of course, when extra grouping within a feature package is practical and clean, 
 - Add tests to new components when they will contain some logic. Only test important flows
 - The website should be mobile-friendly
 - Tailwind is used for styling
-- Lucide is used for icons (<lucide-icon name="home" />)
+- Lucide is used for icons (`<lucide-icon name="home" />`)
+
+### Lucide icon registration
+
+Lucide icons are registered selectively in `frontend/src/app/app.config.ts` via `LucideAngularModule.pick({...})`. **Every icon used anywhere in the app must be imported and added to that pick list**, or it will throw a runtime error ("icon has not been provided by any available icon providers"). When adding a new `<lucide-icon name="foo-bar" />`, import the PascalCase export (e.g. `FooBar`) from `lucide-angular` and add it to both the import statement and the `pick({})` object in `app.config.ts`.
+
+To verify an icon exists in this version of lucide-angular before using it:
+```shell
+ls frontend/node_modules/lucide-angular/icons/ | grep foo-bar
+```
 
 ## Code style
 

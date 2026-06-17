@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.assertj.core.api.Assertions.assertThat
-import java.time.LocalDate
 
 @AutoConfigureMockMvc
 @TestPropertySource(
@@ -35,7 +34,7 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
     lateinit var patternRepository: PatternRepository
 
     @Test
-    fun `export streams a markdown attachment with a dated filename`() {
+    fun `export streams a markdown attachment with the correct filename`() {
         val topic = topicRepository.save(Topic(question = "How to handle nulls?"))
         patternRepository.save(
             Pattern(topic = topic, title = "Winner", code = "val x = 1", eloRating = 1600.0, timesShown = 5),
@@ -49,8 +48,38 @@ class MarkdownExportIntegrationTest : IntegrationTestBase() {
         assertThat(disposition)
             .isNotNull()
             .contains("attachment")
-            .contains("common-ground-${LocalDate.now()}.md")
+            .contains("common-ground.md")
         assertThat(response.contentType).startsWith("text/markdown")
+    }
+
+    @Test
+    fun `export with cursor format includes yaml frontmatter and mdc filename`() {
+        val topic = topicRepository.save(Topic(question = "How to handle nulls?"))
+        patternRepository.save(
+            Pattern(topic = topic, title = "Winner", code = "val x = 1", eloRating = 1600.0, timesShown = 5),
+        )
+
+        val response = mockMvc.perform(get("/api/rankings/export").param("format", "CURSOR"))
+            .andExpect(status().isOk)
+            .andReturn().response
+
+        val disposition = response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
+        assertThat(disposition).contains("coding-standards.mdc")
+        assertThat(response.contentAsString).startsWith("---").contains("alwaysApply: true")
+    }
+
+    @Test
+    fun `export includes topic context as a blockquote when present`() {
+        val topic = topicRepository.save(Topic(question = "How to handle nulls?", context = "Applies to nullable Kotlin values."))
+        patternRepository.save(
+            Pattern(topic = topic, title = "Winner", code = "val x = 1", eloRating = 1600.0, timesShown = 5),
+        )
+
+        val body = mockMvc.perform(get("/api/rankings/export"))
+            .andExpect(status().isOk)
+            .andReturn().response.contentAsString
+
+        assertThat(body).contains("> Applies to nullable Kotlin values.")
     }
 
     @Test

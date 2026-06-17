@@ -18,9 +18,12 @@ export class RankingsApi {
     return this.http.get<PatternDetail>(`/api/patterns/${patternId}`);
   }
 
-  /** Downloads the Markdown export and triggers a browser save without navigating away. */
-  exportMarkdown(): Observable<HttpResponse<Blob>> {
-    return this.http.get('/api/rankings/export', { responseType: 'blob', observe: 'response' });
+  exportMarkdown(format: string = 'GENERIC'): Observable<HttpResponse<Blob>> {
+    return this.http.get('/api/rankings/export', {
+      params: { format },
+      responseType: 'blob',
+      observe: 'response',
+    });
   }
 
   saveExport(response: HttpResponse<Blob>): void {

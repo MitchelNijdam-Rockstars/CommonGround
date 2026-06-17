@@ -6,6 +6,7 @@ import { RankingAlgorithm, TopicRanking } from '../../core/models/ranking.model'
 import { RankingsApi } from '../../core/services/rankings-api';
 import { CodeBlock } from '../../shared/components/code-block/code-block';
 import { LabelBadge } from '../../shared/components/label-badge/label-badge';
+import { ExportDialog } from './components/export-dialog/export-dialog';
 import { PatternDetail } from './components/pattern-detail/pattern-detail';
 
 const DEFAULT_ALGORITHM: RankingAlgorithm = 'ELO';
@@ -17,7 +18,7 @@ interface SelectedPattern {
 
 @Component({
   selector: 'app-rankings',
-  imports: [LucideAngularModule, CodeBlock, LabelBadge, PatternDetail, DecimalPipe, PercentPipe],
+  imports: [LucideAngularModule, CodeBlock, LabelBadge, PatternDetail, ExportDialog, DecimalPipe, PercentPipe],
   templateUrl: './rankings.html',
   styleUrl: './rankings.scss',
 })
@@ -29,19 +30,15 @@ export class Rankings implements OnInit {
   protected readonly algorithm = signal<RankingAlgorithm>(DEFAULT_ALGORITHM);
   protected readonly rankings = signal<TopicRanking[]>([]);
   protected readonly loading = signal(true);
-  protected readonly exporting = signal(false);
+  protected readonly exportDialogOpen = signal(false);
   protected readonly selected = signal<SelectedPattern | null>(null);
 
-  protected exportMarkdown(): void {
-    if (this.exporting()) return;
-    this.exporting.set(true);
-    this.api.exportMarkdown().subscribe({
-      next: (response) => {
-        this.api.saveExport(response);
-        this.exporting.set(false);
-      },
-      error: () => this.exporting.set(false),
-    });
+  protected openExportDialog(): void {
+    this.exportDialogOpen.set(true);
+  }
+
+  protected closeExportDialog(): void {
+    this.exportDialogOpen.set(false);
   }
 
   protected openPattern(patternId: number, rank: number): void {
